@@ -2,7 +2,7 @@ import React from 'react';
 import { appointmentService, emailService } from '../services/api';
 import { Appointment, AppointmentStatus } from '../types';
 import { formatTime, formatDate, cn } from '../lib/utils';
-import { Plus, Calendar as CalendarIcon, CheckCircle, Trash2, Mail, Lock, Image } from 'lucide-react';
+import { Plus, Calendar as CalendarIcon, CheckCircle, Trash2, Mail, Lock, Image, BookOpen } from 'lucide-react';
 import { format } from 'date-fns';
 import { GmailSetup } from './GmailSetup';
 import { ChangePassword } from './ChangePassword';
@@ -10,6 +10,7 @@ import { CreateSlotsModal } from './CreateSlotsModal';
 import { PhotoUpload } from './PhotoUpload';
 import { ConfirmModal } from './ConfirmModal';
 import { WeekView } from './WeekView';
+import { Manual } from './Manual';
 
 export const AdminDashboard: React.FC = () => {
   const [appointments, setAppointments] = React.useState<Appointment[]>([]);
@@ -22,6 +23,7 @@ export const AdminDashboard: React.FC = () => {
   const [confirmDelete, setConfirmDelete] = React.useState<{ id: string; status: string; name?: string; email?: string; date?: string; time?: string } | null>(null);
   const [errorMsg, setErrorMsg] = React.useState<string | null>(null);
   const [view, setView] = React.useState<'day' | 'week'>('day');
+  const [showManual, setShowManual] = React.useState(false);
 
   const loadAppointments = React.useCallback(async () => {
     setLoading(true);
@@ -222,6 +224,19 @@ export const AdminDashboard: React.FC = () => {
         </div>
 
         <button
+          onClick={() => setShowManual(true)}
+          className="w-full flex items-center gap-3 bg-white p-4 rounded-2xl border border-border-gray hover:border-primary/40 hover:bg-primary/5 transition-colors group"
+        >
+          <div className="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
+            <BookOpen size={18} />
+          </div>
+          <div className="text-left">
+            <p className="text-sm font-semibold text-slate-800">Manual de Uso</p>
+            <p className="text-xs text-slate-400">Guía completa del sistema</p>
+          </div>
+        </button>
+
+        <button
           onClick={() => setShowPhotoUpload(true)}
           className="w-full flex items-center gap-3 bg-white p-4 rounded-2xl border border-border-gray hover:border-primary/40 hover:bg-primary/5 transition-colors group"
         >
@@ -282,6 +297,9 @@ export const AdminDashboard: React.FC = () => {
           </div>
         </div>
       </div>}
+
+      {/* Manual */}
+      {showManual && <Manual onClose={() => setShowManual(false)} />}
 
       {/* Error toast */}
       {errorMsg && (
