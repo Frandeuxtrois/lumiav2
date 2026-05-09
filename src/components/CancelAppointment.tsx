@@ -66,6 +66,8 @@ export const CancelAppointment: React.FC = () => {
         email: appointment.email!,
         date: appointment.date,
         time: appointment.time,
+        appointmentId: appointment.id,
+        cancelledBy: 'patient',
       });
       setStatus('success');
     }

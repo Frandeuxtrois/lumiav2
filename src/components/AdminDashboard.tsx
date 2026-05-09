@@ -1,5 +1,5 @@
 import React from 'react';
-import { appointmentService } from '../services/api';
+import { appointmentService, emailService } from '../services/api';
 import { Appointment, AppointmentStatus } from '../types';
 import { formatTime, formatDate, cn } from '../lib/utils';
 import { Plus, Calendar as CalendarIcon, CheckCircle, Trash2, Mail, Lock, Image } from 'lucide-react';
@@ -19,7 +19,7 @@ export const AdminDashboard: React.FC = () => {
   const [showGmailSetup, setShowGmailSetup] = React.useState(false);
   const [showChangePassword, setShowChangePassword] = React.useState(false);
   const [showPhotoUpload, setShowPhotoUpload] = React.useState(false);
-  const [confirmDelete, setConfirmDelete] = React.useState<{ id: string; status: string } | null>(null);
+  const [confirmDelete, setConfirmDelete] = React.useState<{ id: string; status: string; name?: string; email?: string; date?: string; time?: string } | null>(null);
   const [errorMsg, setErrorMsg] = React.useState<string | null>(null);
   const [view, setView] = React.useState<'day' | 'week'>('day');
 
@@ -49,13 +49,30 @@ export const AdminDashboard: React.FC = () => {
   };
 
   const handleDelete = (id: string, status: string) => {
-    setConfirmDelete({ id, status });
+    const apt = appointments.find(a => a.id === id);
+    setConfirmDelete({
+      id, status,
+      name: apt?.name ?? undefined,
+      email: apt?.email ?? undefined,
+      date: apt?.date,
+      time: apt?.time,
+    });
   };
 
   const executeDelete = async () => {
     if (!confirmDelete) return;
     try {
       await appointmentService.deleteAppointment(confirmDelete.id);
+      if (confirmDelete.status === 'booked' && confirmDelete.email && confirmDelete.name) {
+        await emailService.sendCancellation({
+          name: confirmDelete.name,
+          email: confirmDelete.email,
+          date: confirmDelete.date!,
+          time: confirmDelete.time!,
+          appointmentId: confirmDelete.id,
+          cancelledBy: 'therapist',
+        });
+      }
       loadAppointments();
     } catch {
       setErrorMsg('No se pudo eliminar el horario. Intentá de nuevo.');
@@ -282,7 +299,7 @@ export const AdminDashboard: React.FC = () => {
             ? '¿Querés eliminar este turno de todas formas?'
             : '¿Seguro querés eliminar este horario?'}
           warning={confirmDelete.status === 'booked'
-            ? 'El paciente NO recibirá ninguna notificación de la cancelación.'
+            ? 'Se le enviará un email de cancelación al paciente automáticamente.'
             : undefined}
           confirmLabel="Eliminar"
           onConfirm={executeDelete}

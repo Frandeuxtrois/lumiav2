@@ -77,6 +77,17 @@ serve(async (req) => {
     const cancelUrl = `${APP_URL}/cancelar?id=${appointmentId}`;
     const icsContent = buildIcs(date, time, appointmentId, name, cancelUrl, GMAIL_USER);
 
+    // Google Calendar link
+    const [y, m, d] = date.split('-');
+    const [h, min] = time.split(':');
+    const dtStart = `${y}${m}${d}T${h}${min}00`;
+    const endH = String(Number(h) + 1).padStart(2, '0');
+    const dtEnd = `${y}${m}${d}T${endH}${min}00`;
+    const gcalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE`
+      + `&text=${encodeURIComponent('Consulta psicológica — Samanta Vargas')}`
+      + `&dates=${dtStart}/${dtEnd}`
+      + `&details=${encodeURIComponent(`Turno confirmado.\nPara cancelar: ${cancelUrl}`)}`;
+
     const patientHtml = `
       <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
         <h2 style="color: #1a1a1a;">¡Turno confirmado!</h2>
@@ -85,7 +96,10 @@ serve(async (req) => {
           <p style="margin: 0;"><strong>Fecha:</strong> ${date}</p>
           <p style="margin: 8px 0 0;"><strong>Hora:</strong> ${time}</p>
         </div>
-        <p style="color: #666; font-size: 14px;">El archivo adjunto te permite agregar el turno a tu calendario con un clic.</p>
+        <a href="${gcalUrl}" style="display: inline-block; background: #4285f4; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; margin-bottom: 12px;">
+          📅 Agregar a Google Calendar
+        </a>
+        <p style="color: #888; font-size: 12px; margin: 0 0 24px;">¿Usás Apple Calendar u Outlook? Abrí el archivo adjunto (.ics).</p>
         <p style="color: #666; font-size: 14px;">
           Si necesitás cancelar, podés hacerlo hasta 48 horas antes desde el siguiente link:
         </p>
@@ -106,6 +120,10 @@ serve(async (req) => {
           <p style="margin: 8px 0 0;"><strong>Fecha:</strong> ${date}</p>
           <p style="margin: 8px 0 0;"><strong>Hora:</strong> ${time}</p>
         </div>
+        <a href="${gcalUrl}" style="display: inline-block; background: #4285f4; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; margin-bottom: 12px;">
+          📅 Agregar a Google Calendar
+        </a>
+        <p style="color: #888; font-size: 12px; margin: 0;">¿Usás Apple Calendar u Outlook? Abrí el archivo adjunto (.ics).</p>
       </div>
     `;
 

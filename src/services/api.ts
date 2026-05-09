@@ -10,7 +10,7 @@ export const emailService = {
     }
   },
 
-  async sendCancellation(params: { name: string; email: string; date: string; time: string }) {
+  async sendCancellation(params: { name: string; email: string; date: string; time: string; appointmentId: string; cancelledBy: 'patient' | 'therapist' }) {
     try {
       await supabase.functions.invoke('send-cancellation', { body: params });
     } catch {
