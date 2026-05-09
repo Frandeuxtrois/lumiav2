@@ -5,6 +5,7 @@ import { format, parseISO, differenceInHours } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Appointment } from '../types';
 import { CheckCircle2, XCircle, AlertTriangle, Loader2 } from 'lucide-react';
+import { emailService } from '../services/api';
 
 const CANCEL_HOURS_LIMIT = 48;
 
@@ -60,6 +61,12 @@ export const CancelAppointment: React.FC = () => {
       setErrorMsg(error.message);
       setStatus('error');
     } else {
+      await emailService.sendCancellation({
+        name: appointment.name!,
+        email: appointment.email!,
+        date: appointment.date,
+        time: appointment.time,
+      });
       setStatus('success');
     }
     setCancelling(false);

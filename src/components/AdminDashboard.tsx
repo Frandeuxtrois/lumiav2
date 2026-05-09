@@ -8,6 +8,8 @@ import { GmailSetup } from './GmailSetup';
 import { ChangePassword } from './ChangePassword';
 import { CreateSlotsModal } from './CreateSlotsModal';
 import { PhotoUpload } from './PhotoUpload';
+import { ConfirmModal } from './ConfirmModal';
+import { WeekView } from './WeekView';
 
 export const AdminDashboard: React.FC = () => {
   const [appointments, setAppointments] = React.useState<Appointment[]>([]);
@@ -17,6 +19,9 @@ export const AdminDashboard: React.FC = () => {
   const [showGmailSetup, setShowGmailSetup] = React.useState(false);
   const [showChangePassword, setShowChangePassword] = React.useState(false);
   const [showPhotoUpload, setShowPhotoUpload] = React.useState(false);
+  const [confirmDelete, setConfirmDelete] = React.useState<{ id: string; status: string } | null>(null);
+  const [errorMsg, setErrorMsg] = React.useState<string | null>(null);
+  const [view, setView] = React.useState<'day' | 'week'>('day');
 
   const loadAppointments = React.useCallback(async () => {
     setLoading(true);
@@ -38,22 +43,24 @@ export const AdminDashboard: React.FC = () => {
     try {
       await appointmentService.updateAppointmentStatus(id, status);
       loadAppointments();
-    } catch (err) {
-      alert('Error actualizando estado');
+    } catch {
+      setErrorMsg('No se pudo actualizar el estado. Intentá de nuevo.');
     }
   };
 
-  const handleDelete = async (id: string, status: string) => {
-    const msg = status === 'booked'
-      ? '⚠️ Este turno está RESERVADO por un paciente.\n\nSi lo eliminás, el paciente NO recibirá ninguna notificación.\n\n¿Querés eliminarlo de todas formas?'
-      : '¿Seguro querés eliminar este horario?';
+  const handleDelete = (id: string, status: string) => {
+    setConfirmDelete({ id, status });
+  };
 
-    if (!confirm(msg)) return;
+  const executeDelete = async () => {
+    if (!confirmDelete) return;
     try {
-      await appointmentService.deleteAppointment(id);
+      await appointmentService.deleteAppointment(confirmDelete.id);
       loadAppointments();
-    } catch (err) {
-      alert('Error eliminando');
+    } catch {
+      setErrorMsg('No se pudo eliminar el horario. Intentá de nuevo.');
+    } finally {
+      setConfirmDelete(null);
     }
   };
 
@@ -66,20 +73,37 @@ export const AdminDashboard: React.FC = () => {
 
   return (
     <div className="grid grid-cols-12 gap-8">
-      {/* Header & Stats */}
+      {/* Header */}
       <div className="col-span-12 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-6 rounded-2xl border border-border-gray shadow-sm">
         <div>
           <h2 className="text-xl font-bold">Panel de Control</h2>
           <p className="text-sm text-slate-500">Gestión de turnos y disponibilidad.</p>
         </div>
-        <div className="flex gap-2">
-           <input 
-            type="date"
-            value={filterDate}
-            onChange={(e) => setFilterDate(e.target.value)}
-            className="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
-          />
-          <button 
+        <div className="flex gap-2 items-center flex-wrap">
+          {/* Tabs */}
+          <div className="flex bg-slate-100 p-1 rounded-lg">
+            {(['day', 'week'] as const).map(v => (
+              <button
+                key={v}
+                onClick={() => setView(v)}
+                className={cn(
+                  'px-3 py-1.5 rounded-md text-xs font-semibold transition-all',
+                  view === v ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+                )}
+              >
+                {v === 'day' ? 'Día' : 'Semana'}
+              </button>
+            ))}
+          </div>
+          {view === 'day' && (
+            <input
+              type="date"
+              value={filterDate}
+              onChange={(e) => setFilterDate(e.target.value)}
+              className="px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+            />
+          )}
+          <button
             onClick={() => setShowAddModal(true)}
             className="bg-slate-900 text-white text-xs font-bold uppercase tracking-widest px-4 py-2 rounded-lg flex items-center gap-2 hover:bg-slate-800 transition-colors"
           >
@@ -88,12 +112,21 @@ export const AdminDashboard: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Table */}
+      {/* Main content */}
+      {view === 'week' ? (
+        <div className="col-span-12 bg-white rounded-2xl shadow-sm border border-border-gray p-6">
+          <WeekView
+            appointments={appointments}
+            loading={loading}
+            onStatusChange={handleStatusChange}
+            onDelete={handleDelete}
+          />
+        </div>
+      ) : (
       <div className="col-span-12 lg:col-span-8 bg-white rounded-2xl shadow-sm border border-border-gray overflow-hidden">
         <div className="px-6 py-4 border-b border-border-gray bg-slate-50">
           <h3 className="font-semibold text-sm">Consultas para {formatDate(filterDate)}</h3>
         </div>
-        
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead>
@@ -106,13 +139,9 @@ export const AdminDashboard: React.FC = () => {
             </thead>
             <tbody className="divide-y divide-slate-100">
               {loading ? (
-                <tr>
-                  <td colSpan={4} className="px-6 py-8 text-center text-slate-400">Cargando...</td>
-                </tr>
+                <tr><td colSpan={4} className="px-6 py-8 text-center text-slate-400">Cargando...</td></tr>
               ) : appointments.filter(a => a.date === filterDate).length === 0 ? (
-                <tr>
-                  <td colSpan={4} className="px-6 py-8 text-center text-slate-400">No hay turnos creados para este día.</td>
-                </tr>
+                <tr><td colSpan={4} className="px-6 py-8 text-center text-slate-400">No hay turnos creados para este día.</td></tr>
               ) : (
                 appointments.filter(a => a.date === filterDate).map((apt) => (
                   <tr key={apt.id} className="hover:bg-slate-50/30 transition-colors">
@@ -153,9 +182,10 @@ export const AdminDashboard: React.FC = () => {
           </table>
         </div>
       </div>
+      )}
 
       {/* Stats Summary & Quick Filter */}
-      <div className="col-span-12 lg:col-span-4 flex flex-col gap-4">
+      {view !== 'week' && <div className="col-span-12 lg:col-span-4 flex flex-col gap-4">
         <div className="bg-primary p-6 rounded-2xl border border-white text-white shadow-lg shadow-green-900/10">
           <p className="text-[10px] font-bold uppercase tracking-widest mb-1 opacity-80">Resumen del día</p>
           <div className="flex items-end justify-between">
@@ -234,7 +264,31 @@ export const AdminDashboard: React.FC = () => {
             </div>
           </div>
         </div>
-      </div>
+      </div>}
+
+      {/* Error toast */}
+      {errorMsg && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[200] bg-red-500 text-white text-sm font-medium px-5 py-3 rounded-xl shadow-lg flex items-center gap-3">
+          {errorMsg}
+          <button onClick={() => setErrorMsg(null)} className="text-white/70 hover:text-white text-lg leading-none">×</button>
+        </div>
+      )}
+
+      {/* Confirm Delete Modal */}
+      {confirmDelete && (
+        <ConfirmModal
+          title={confirmDelete.status === 'booked' ? 'Turno reservado' : 'Eliminar horario'}
+          message={confirmDelete.status === 'booked'
+            ? '¿Querés eliminar este turno de todas formas?'
+            : '¿Seguro querés eliminar este horario?'}
+          warning={confirmDelete.status === 'booked'
+            ? 'El paciente NO recibirá ninguna notificación de la cancelación.'
+            : undefined}
+          confirmLabel="Eliminar"
+          onConfirm={executeDelete}
+          onCancel={() => setConfirmDelete(null)}
+        />
+      )}
 
       {/* Photo Upload Modal */}
       {showPhotoUpload && (

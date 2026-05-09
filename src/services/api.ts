@@ -9,6 +9,14 @@ export const emailService = {
       console.warn('No se pudo enviar el email de confirmación');
     }
   },
+
+  async sendCancellation(params: { name: string; email: string; date: string; time: string }) {
+    try {
+      await supabase.functions.invoke('send-cancellation', { body: params });
+    } catch {
+      console.warn('No se pudo enviar el email de cancelación');
+    }
+  },
 };
 
 export const appointmentService = {

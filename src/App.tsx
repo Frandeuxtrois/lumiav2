@@ -21,9 +21,10 @@ const PatientBooking: React.FC = () => {
   const [availableSlots, setAvailableSlots] = React.useState<Appointment[]>([]);
   const [selectedSlotId, setSelectedSlotId] = React.useState<string | null>(null);
   const [loadingSlots, setLoadingSlots] = React.useState(true);
-  const [step, setStep] = React.useState(1); // 1: Date/Time, 2: Form, 3: Success
+  const [step, setStep] = React.useState(1);
   const [bookingLoading, setBookingLoading] = React.useState(false);
   const [calendarRefresh, setCalendarRefresh] = React.useState(0);
+  const [bookedSlot, setBookedSlot] = React.useState<{ date: string; time: string; name: string } | null>(null);
 
   const fetchSlots = React.useCallback(async () => {
     setLoadingSlots(true);
@@ -52,6 +53,7 @@ const PatientBooking: React.FC = () => {
         time: slot.time,
         appointmentId: selectedSlotId,
       });
+      setBookedSlot({ date: slot.date, time: slot.time, name: data.name });
       setStep(3);
       setCalendarRefresh(r => r + 1);
     } catch (err) {
@@ -63,7 +65,7 @@ const PatientBooking: React.FC = () => {
 
   if (step === 3) {
     return (
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
         className="max-w-md mx-auto text-center bg-white p-8 rounded-2xl border border-border-gray shadow-sm"
@@ -72,10 +74,28 @@ const PatientBooking: React.FC = () => {
           <CheckCircle2 size={32} />
         </div>
         <h2 className="text-2xl font-bold mb-2">¡Reserva Exitosa!</h2>
-        <p className="text-slate-500 mb-8">Tu turno ha sido confirmado. Te enviamos los detalles a tu email.</p>
-        <button 
-          onClick={() => { setStep(1); setSelectedSlotId(null); fetchSlots(); }}
-          className="w-full py-3 bg-primary text-white rounded-xl font-medium"
+        <p className="text-slate-500 mb-6">Te enviamos los detalles a tu email junto con el archivo para agregar el turno a tu calendario.</p>
+        {bookedSlot && (
+          <div className="bg-slate-50 rounded-xl p-4 mb-6 text-left space-y-2">
+            <div className="flex justify-between text-sm">
+              <span className="text-slate-500">Paciente</span>
+              <span className="font-medium text-slate-900">{bookedSlot.name}</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-slate-500">Fecha</span>
+              <span className="font-medium text-slate-900 capitalize">
+                {new Date(bookedSlot.date + 'T12:00:00').toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' })}
+              </span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-slate-500">Hora</span>
+              <span className="font-medium text-slate-900">{bookedSlot.time.slice(0, 5)}</span>
+            </div>
+          </div>
+        )}
+        <button
+          onClick={() => { setStep(1); setSelectedSlotId(null); setBookedSlot(null); fetchSlots(); }}
+          className="w-full py-3 bg-primary text-white rounded-xl font-medium hover:bg-primary-hover transition-colors"
         >
           Volver al Inicio
         </button>
