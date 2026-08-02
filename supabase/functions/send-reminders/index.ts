@@ -22,7 +22,11 @@ serve(async (req) => {
     const settings = Object.fromEntries(settingsRows.map(r => [r.key, r.value]));
     const GMAIL_USER = settings['gmail_user'];
     const GMAIL_PASS = settings['gmail_app_password'];
-    const APP_URL = Deno.env.get('APP_URL') ?? 'https://samantavargas.vercel.app';
+    // Sin APP_URL los links de cancelacion apuntan a localhost y no sirven en produccion.
+    const APP_URL = Deno.env.get('APP_URL') ?? 'http://localhost:3000';
+    if (!Deno.env.get('APP_URL')) {
+      console.error('[send-reminders] APP_URL no esta configurado: los links de cancelacion apuntan a localhost.');
+    }
 
     const nodemailer = await import('npm:nodemailer');
     const transporter = nodemailer.default.createTransport({
@@ -60,7 +64,7 @@ serve(async (req) => {
       const html = `
         <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
           <h2 style="color: #1a1a1a;">Recordatorio de turno</h2>
-          <p>Hola <strong>${apt.name}</strong>, te recordamos que en <strong>${hoursLabel}</strong> tenés un turno con Samanta Vargas.</p>
+          <p>Hola <strong>${apt.name}</strong>, te recordamos que en <strong>${hoursLabel}</strong> tenés un turno con Lumina.</p>
           <div style="background: #f9f9f9; border-radius: 8px; padding: 16px; margin: 24px 0;">
             <p style="margin: 0;"><strong>Fecha:</strong> ${apt.date}</p>
             <p style="margin: 8px 0 0;"><strong>Hora:</strong> ${apt.time}</p>
@@ -75,7 +79,7 @@ serve(async (req) => {
       `;
 
       await transporter.sendMail({
-        from: `"Samanta Vargas" <${GMAIL_USER}>`,
+        from: `"Lumina" <${GMAIL_USER}>`,
         to: apt.email,
         subject: `Recordatorio: tu turno es en ${hoursLabel}`,
         html,

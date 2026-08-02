@@ -18,16 +18,16 @@ function buildIcs(date: string, time: string, appointmentId: string, name: strin
   return [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//Samanta Vargas//Turnero//ES',
+    'PRODID:-//Lumina//Turnero//ES',
     'CALSCALE:GREGORIAN',
     'METHOD:REQUEST',
     'BEGIN:VEVENT',
-    `UID:${appointmentId}@samantavargas`,
+    `UID:${appointmentId}@lumina`,
     `DTSTART;TZID=America/Argentina/Buenos_Aires:${dtStart}`,
     `DTEND;TZID=America/Argentina/Buenos_Aires:${dtEnd}`,
-    'SUMMARY:Consulta psicológica — Samanta Vargas',
+    'SUMMARY:Consulta psicológica — Lumina',
     `DESCRIPTION:Turno confirmado.\\nPara cancelar: ${cancelUrl}`,
-    `ORGANIZER;CN=Samanta Vargas:mailto:${gmailUser}`,
+    `ORGANIZER;CN=Lumina:mailto:${gmailUser}`,
     `ATTENDEE;CN=${name}:mailto:unknown`,
     'STATUS:CONFIRMED',
     'SEQUENCE:0',
@@ -72,7 +72,11 @@ serve(async (req) => {
     const GMAIL_USER = settings['gmail_user'];
     const GMAIL_PASS = settings['gmail_app_password'];
     const THERAPIST_EMAIL = Deno.env.get('THERAPIST_EMAIL') ?? GMAIL_USER;
-    const APP_URL = Deno.env.get('APP_URL') ?? 'https://samantavargas.vercel.app';
+    // Sin APP_URL los links de cancelacion apuntan a localhost y no sirven en produccion.
+    const APP_URL = Deno.env.get('APP_URL') ?? 'http://localhost:3000';
+    if (!Deno.env.get('APP_URL')) {
+      console.error('[send-confirmation] APP_URL no esta configurado: los links de cancelacion apuntan a localhost.');
+    }
 
     const cancelUrl = `${APP_URL}/cancelar?id=${appointmentId}`;
     const icsContent = buildIcs(date, time, appointmentId, name, cancelUrl, GMAIL_USER);
@@ -84,7 +88,7 @@ serve(async (req) => {
     const endH = String(Number(h) + 1).padStart(2, '0');
     const dtEnd = `${y}${m}${d}T${endH}${min}00`;
     const gcalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE`
-      + `&text=${encodeURIComponent('Consulta psicológica — Samanta Vargas')}`
+      + `&text=${encodeURIComponent('Consulta psicológica — Lumina')}`
       + `&dates=${dtStart}/${dtEnd}`
       + `&details=${encodeURIComponent(`Turno confirmado.\nPara cancelar: ${cancelUrl}`)}`;
 
@@ -141,14 +145,14 @@ serve(async (req) => {
 
     await Promise.all([
       transporter.sendMail({
-        from: `"Samanta Vargas" <${GMAIL_USER}>`,
+        from: `"Lumina" <${GMAIL_USER}>`,
         to,
         subject: `Confirmación de turno — ${date} ${time}`,
         html: patientHtml,
         attachments: [icsAttachment],
       }),
       transporter.sendMail({
-        from: `"Samanta Vargas" <${GMAIL_USER}>`,
+        from: `"Lumina" <${GMAIL_USER}>`,
         to: THERAPIST_EMAIL,
         subject: `Nueva reserva: ${name} — ${date} ${time}`,
         html: therapistHtml,

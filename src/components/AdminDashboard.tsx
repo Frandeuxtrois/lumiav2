@@ -66,7 +66,7 @@ export const AdminDashboard: React.FC = () => {
     try {
       await appointmentService.deleteAppointment(confirmDelete.id);
       if (confirmDelete.status === 'booked' && confirmDelete.email && confirmDelete.name) {
-        await emailService.sendCancellation({
+        const mail = await emailService.sendCancellation({
           name: confirmDelete.name,
           email: confirmDelete.email,
           date: confirmDelete.date!,
@@ -74,6 +74,9 @@ export const AdminDashboard: React.FC = () => {
           appointmentId: confirmDelete.id,
           cancelledBy: 'therapist',
         });
+        if (!mail.ok) {
+          setErrorMsg(`El turno se eliminó, pero no se pudo avisar a ${confirmDelete.name} por email: ${mail.message}`);
+        }
       }
       loadAppointments();
     } catch {

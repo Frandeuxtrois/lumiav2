@@ -18,6 +18,7 @@ export const CancelAppointment: React.FC = () => {
   const [cancelling, setCancelling] = React.useState(false);
   const [status, setStatus] = React.useState<'idle' | 'success' | 'error' | 'too-late' | 'not-found'>('idle');
   const [errorMsg, setErrorMsg] = React.useState('');
+  const [emailWarning, setEmailWarning] = React.useState<string | null>(null);
 
   React.useEffect(() => {
     if (!id) { setStatus('not-found'); setLoading(false); return; }
@@ -61,7 +62,7 @@ export const CancelAppointment: React.FC = () => {
       setErrorMsg(error.message);
       setStatus('error');
     } else {
-      await emailService.sendCancellation({
+      const mail = await emailService.sendCancellation({
         name: appointment.name!,
         email: appointment.email!,
         date: appointment.date,
@@ -69,6 +70,7 @@ export const CancelAppointment: React.FC = () => {
         appointmentId: appointment.id,
         cancelledBy: 'patient',
       });
+      if (!mail.ok) setEmailWarning(mail.message ?? 'No se pudo notificar por email.');
       setStatus('success');
     }
     setCancelling(false);
@@ -91,6 +93,15 @@ export const CancelAppointment: React.FC = () => {
         </div>
         <h2 className="text-2xl font-bold mb-2">Turno cancelado</h2>
         <p className="text-slate-500">Tu turno fue cancelado correctamente. El horario quedó disponible nuevamente.</p>
+        {emailWarning && (
+          <div className="flex items-start gap-3 text-left bg-amber-50 border border-amber-200 rounded-xl p-4 mt-6">
+            <AlertTriangle size={20} className="text-amber-600 shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-semibold text-amber-900">No pudimos enviar el aviso por email.</p>
+              <p className="text-xs text-amber-800 mt-1">La cancelación sí quedó registrada. Detalle técnico: {emailWarning}</p>
+            </div>
+          </div>
+        )}
       </div>
     );
   }

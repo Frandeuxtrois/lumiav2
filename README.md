@@ -1,21 +1,24 @@
-# Sistema de Gestión de Turnos
+# Lumina — Turnero
 
-SPA de reservas online para profesionales de la salud. Permite a pacientes elegir fecha y horario, completar sus datos y recibir confirmación por email. La profesional gestiona todo desde un panel de administración privado.
+SPA de reservas online para profesionales independientes. El paciente elige fecha y horario, deja sus datos y recibe confirmación por email con archivo de calendario adjunto. La profesional gestiona todo desde un panel privado.
+
+El sistema envía tres tipos de email de forma automática: confirmación al reservar, cancelación (en ambas direcciones) y recordatorios a 24 y 2 horas del turno.
 
 ---
 
-## Tabla de Contenidos
+## Índice
 
-1. [Stack tecnológico](#stack)
-2. [Estructura del proyecto](#estructura)
-3. [Base de datos (Supabase)](#base-de-datos)
-4. [Storage (Supabase)](#storage)
-5. [Variables de entorno](#variables-de-entorno)
-6. [Edge Function — Envío de emails](#edge-function)
-7. [Flujo del paciente](#flujo-del-paciente)
-8. [Flujo del administrador](#flujo-del-administrador)
-9. [Deploy](#deploy)
-10. [Nuevo cliente — qué cambiar](#nuevo-cliente)
+1. [Stack](#stack)
+2. [Estructura](#estructura)
+3. [Base de datos](#base-de-datos)
+4. [Storage](#storage)
+5. [Variables y secrets](#variables-y-secrets)
+6. [Edge Functions](#edge-functions)
+7. [Cron de recordatorios](#cron-de-recordatorios)
+8. [Flujo del paciente](#flujo-del-paciente)
+9. [Flujo del administrador](#flujo-del-administrador)
+10. [Levantar una instancia nueva](#levantar-una-instancia-nueva)
+11. [Personalizar por cliente](#personalizar-por-cliente)
 
 ---
 
@@ -23,13 +26,17 @@ SPA de reservas online para profesionales de la salud. Permite a pacientes elegi
 
 | Capa | Tecnología |
 |---|---|
-| UI | React 19 + TypeScript |
+| UI | React 19 + TypeScript + Vite 6 |
 | Estilos | Tailwind CSS 4 |
 | Routing | React Router DOM v7 |
-| Animaciones | Motion (Framer Motion v12) |
+| Animaciones | Motion v12 |
+| Iconos | lucide-react |
 | Backend / DB | Supabase (PostgreSQL + Auth + Storage + Edge Functions) |
-| Emails | Gmail SMTP via nodemailer (Edge Function) |
+| Emails | Gmail SMTP vía nodemailer, con adjuntos `.ics` |
+| Recordatorios | pg_cron + pg_net |
 | Deploy | Vercel (frontend) + Supabase (backend) |
+
+El estado del servidor se maneja con llamadas directas al SDK de Supabase y `useState`. No hay capa de cache tipo TanStack Query.
 
 ---
 
@@ -38,185 +45,177 @@ SPA de reservas online para profesionales de la salud. Permite a pacientes elegi
 ```
 /
 ├── src/
-│   ├── App.tsx                   # Routing principal y estado de sesión
-│   ├── main.tsx                  # Entry point React
-│   ├── types.ts                  # Tipos TypeScript (Appointment, etc.)
-│   ├── index.css                 # Variables de tema (colores, fuentes)
+│   ├── App.tsx                   # Routing, sesión y flujo de reserva del paciente
+│   ├── main.tsx                  # Entry point
+│   ├── types.ts                  # Appointment, AppointmentStatus
+│   ├── index.css                 # Variables de tema (colores, fuente)
 │   ├── lib/
-│   │   ├── supabase.ts           # Cliente Supabase singleton
+│   │   ├── supabase.ts           # Cliente singleton + flag supabaseReady
 │   │   └── utils.ts              # formatTime(), formatDate(), cn()
 │   ├── services/
 │   │   └── api.ts                # appointmentService + emailService
 │   └── components/
-│       ├── Layout.tsx            # Navbar + footer, envuelve toda la app
-│       ├── Auth.tsx              # Login de la profesional
-│       ├── Calendar.tsx          # Selector visual de fechas
-│       ├── SlotSelector.tsx      # Grid de horarios disponibles
-│       ├── BookingForm.tsx       # Formulario de datos del paciente
-│       ├── CancelAppointment.tsx # Página de cancelación por link
-│       ├── ProfileCard.tsx       # Tarjeta de presentación (paciente)
-│       ├── AdminDashboard.tsx    # Panel de control
-│       ├── CreateSlotsModal.tsx  # Modal para crear horarios (3 modos)
-│       ├── GmailSetup.tsx        # Wizard para conectar Gmail
-│       ├── ChangePassword.tsx    # Cambio de contraseña admin
-│       └── PhotoUpload.tsx       # Subida de foto de perfil
+│       ├── Layout.tsx            # Navbar con reloj + footer
+│       ├── Auth.tsx              # Login
+│       ├── Calendar.tsx          # Calendario mensual
+│       ├── SlotSelector.tsx      # Grid de horarios
+│       ├── BookingForm.tsx       # Datos del paciente
+│       ├── CancelAppointment.tsx # Cancelación por link (/cancelar?id=)
+│       ├── ProfileCard.tsx       # Tarjeta de presentación
+│       ├── AdminDashboard.tsx    # Panel: vista día y semana
+│       ├── WeekView.tsx          # Vista semanal del panel
+│       ├── CreateSlotsModal.tsx  # Alta de horarios (3 modos)
+│       ├── GmailSetup.tsx        # Wizard de conexión con Gmail
+│       ├── ChangePassword.tsx    # Cambio de contraseña
+│       ├── PhotoUpload.tsx       # Foto de perfil
+│       ├── ConfirmModal.tsx      # Confirmación de acciones destructivas
+│       └── Manual.tsx            # Manual de uso dentro de la app
 ├── supabase/
 │   ├── functions/
-│   │   └── send-confirmation/
-│   │       └── index.ts          # Edge Function que envía emails
+│   │   ├── send-confirmation/    # Email al reservar
+│   │   ├── send-cancellation/    # Email al cancelar
+│   │   └── send-reminders/       # Recordatorios 24h y 2h (lo dispara el cron)
 │   └── migrations/
-│       ├── create_settings_table.sql
-│       └── public_read_profile_photo.sql
-├── .env                          # Variables locales (no subir a git)
-├── vercel.json                   # Rewrites para SPA (evita 404 en refresh)
-└── vite.config.ts                # Config de Vite
+│       ├── 001_appointments_and_settings.sql
+│       ├── 002_profile_storage_bucket.sql
+│       └── 003_cron_send_reminders.sql
+├── .env                          # Local, ignorado por git
+├── vercel.json                   # Rewrites SPA
+└── vite.config.ts
 ```
 
-### Qué hace cada componente
+### Componentes
 
-**`Layout.tsx`** — Navbar con logo, nombre de la profesional, link al panel admin y botón de logout. Envuelve todas las páginas.
+**`Calendar.tsx`** — Calendario mensual navegable. Desactiva fechas pasadas y días sin cupo. `date-fns` con locale español.
 
-**`Calendar.tsx`** — Calendario mensual navegable. Desactiva fechas pasadas, resalta la seleccionada. Usa `date-fns` con locale español.
+**`SlotSelector.tsx`** — Horarios de la fecha elegida. Los ocupados se muestran deshabilitados.
 
-**`SlotSelector.tsx`** — Grid de horarios disponibles para la fecha elegida. Muestra skeleton mientras carga.
+**`CancelAppointment.tsx`** — Página del link de cancelación. Valida el límite de horas (`CANCEL_HOURS_LIMIT`, default 48). Al cancelar devuelve el slot a `available` y borra los datos del paciente.
 
-**`BookingForm.tsx`** — Formulario con nombre, email, teléfono (opcional) y notas (opcional).
+**`AdminDashboard.tsx`** — Vista día (lista filtrable) y vista semana. Marcar completado, eliminar, y accesos a los modales de configuración.
 
-**`ProfileCard.tsx`** — Tarjeta de presentación que aparece en la página del paciente. Muestra la foto de perfil (desde Supabase Storage), nombre y título de la profesional.
-
-**`CancelAppointment.tsx`** — Página accesible por el link del email de confirmación (`/cancelar?id=xxx`). Valida que falten más de 48 horas antes de permitir cancelar. Al cancelar, resetea el slot a `available` y borra los datos del paciente.
-
-**`AdminDashboard.tsx`** — Tabla de turnos filtrable por fecha. Marcar como completados, eliminar. Sidebar con accesos a: crear horarios, foto de perfil, Gmail y cambio de contraseña.
-
-**`CreateSlotsModal.tsx`** — Modal con 3 modos para crear horarios:
+**`CreateSlotsModal.tsx`** — Tres modos:
 - **Individual:** una fecha y una hora
-- **Rango:** una fecha con horario desde/hasta y duración de sesión (30/45/60/90 min) — muestra preview de los slots generados
-- **Período:** días de la semana + rango de fechas + horario + duración — genera slots en bloque para semanas completas
+- **Rango:** una fecha, horario desde/hasta y duración (30/45/60/90 min), con preview
+- **Período:** días de la semana + rango de fechas + horario + duración, en bloque
 
-**`GmailSetup.tsx`** — Wizard de 5 pasos que guía a la profesional para obtener una Contraseña de Aplicación de Google y guardarla en la tabla `settings`.
+**`GmailSetup.tsx`** — Wizard de 5 pasos para obtener una Contraseña de Aplicación de Google y guardarla en `settings`.
 
-**`ChangePassword.tsx`** — Formulario para cambiar la contraseña de acceso al panel. Valida la contraseña actual antes de actualizarla.
-
-**`PhotoUpload.tsx`** — Sube una foto de perfil a Supabase Storage (bucket `profile`) y guarda la URL pública en la tabla `settings`. Acepta JPG, PNG, WebP hasta 5 MB.
+**`Manual.tsx`** — Manual de uso accesible desde el panel.
 
 ---
 
 ## Base de datos
 
-### Tabla `appointments`
+### `appointments`
+
+Cada fila es un slot horario. Los datos del paciente viven en la misma fila y quedan en `null` cuando el slot está libre.
 
 | Campo | Tipo | Notas |
 |---|---|---|
-| `id` | UUID | PK, generado automáticamente |
-| `date` | DATE | Formato `YYYY-MM-DD` |
-| `time` | TIME | Formato `HH:MM` |
+| `id` | UUID | PK |
+| `date` | DATE | `YYYY-MM-DD` |
+| `time` | TIME | `HH:MM` |
 | `status` | TEXT | `available` / `booked` / `completed` / `cancelled` |
-| `name` | TEXT | Nombre del paciente (null si libre) |
-| `email` | TEXT | Email del paciente (null si libre) |
-| `phone` | TEXT | Teléfono (opcional) |
-| `notes` | TEXT | Observaciones (opcional) |
+| `name`, `email`, `phone`, `notes` | TEXT | Datos del paciente, null si libre |
+| `reminder_24h_sent` | BOOLEAN | Evita reenviar el recordatorio de 24h |
+| `reminder_2h_sent` | BOOLEAN | Ídem para el de 2h |
 | `created_at` | TIMESTAMPTZ | Auto |
 
-**Constraint única:** `UNIQUE (date, time)` — impide cargar dos turnos en la misma fecha y hora.
+**`unique_slot UNIQUE (date, time)`** — impide dos turnos en el mismo momento. `api.ts` detecta el error `23505` para avisar de duplicados al crear horarios en bloque.
 
-```sql
-ALTER TABLE appointments ADD CONSTRAINT unique_slot UNIQUE (date, time);
-```
+### `settings`
 
-**RLS policies aplicadas:**
+Configuración key/value que escribe la profesional desde el panel.
 
-| Policy | Rol | Operación | Condición |
-|---|---|---|---|
-| Public can view appointments | public | SELECT | `status = 'available' OR status = 'booked' OR auth.role() = 'authenticated'` |
-| Public can book appointments | public | UPDATE | using: `status = 'available'` → with check: `status = 'booked'` |
-| Public can cancel booked appointments | public | UPDATE | using: `status = 'booked'` → with check: `status = 'available'` |
-| Admin full access appointments | public | ALL | `auth.role() = 'authenticated'` |
-| anon_can_book | anon | UPDATE | using: `status = 'available'` → with check: `status = 'booked'` |
-
-```sql
-GRANT SELECT, UPDATE ON appointments TO anon;
-```
-
-### Tabla `settings`
-
-| Campo | Tipo | Notas |
-|---|---|---|
-| `key` | TEXT | PK |
-| `value` | TEXT | Valor de la configuración |
-| `updated_at` | TIMESTAMPTZ | Auto |
-
-**Claves usadas:**
-
-| key | value |
+| key | Contenido |
 |---|---|
-| `gmail_user` | Email de Gmail de la profesional |
+| `gmail_user` | Email de Gmail |
 | `gmail_app_password` | Contraseña de aplicación de 16 caracteres |
-| `profile_photo` | URL pública de la foto en Supabase Storage |
+| `profile_photo` | URL pública de la foto |
 
-**RLS:**
-- Usuarios autenticados: lectura y escritura total
-- Anon (pacientes): solo lectura de `profile_photo`
+### RLS
 
-SQL: `supabase/migrations/create_settings_table.sql` + `supabase/migrations/public_read_profile_photo.sql`
+El calendario público necesita ver los turnos ocupados para marcar los días llenos, por eso anon lee tanto `available` como `booked` — pero nunca los datos personales de otro paciente más allá de lo que expone la fila.
+
+| Tabla | Policy | Rol | Operación |
+|---|---|---|---|
+| appointments | `anon_read_slots` | anon | SELECT `status in ('available','booked')` |
+| appointments | `anon_book_slot` | anon | UPDATE `available` → `booked` |
+| appointments | `anon_cancel_slot` | anon | UPDATE `booked` → `available` |
+| appointments | `authenticated_full_access_appointments` | authenticated | ALL |
+| settings | `anon_read_profile_photo` | anon | SELECT solo `key = 'profile_photo'` |
+| settings | `authenticated_full_access_settings` | authenticated | ALL |
+| storage.objects | `anon_read_profile_objects` | anon | SELECT bucket `profile` |
+| storage.objects | `authenticated_manage_profile_photo` | authenticated | ALL bucket `profile` |
+
+Todo esto está en `001` y `002`. No editar a mano desde el dashboard: si cambia, actualizar la migración.
 
 ---
 
 ## Storage
 
-**Bucket:** `profile` (público)
-
-Almacena la foto de perfil de la profesional. Al subir una nueva foto, la URL pública se guarda en `settings` con key `profile_photo` y se muestra automáticamente en la página de reservas.
-
-**Setup en Supabase:**
-Supabase → Storage → New bucket → nombre: `profile` → activar **Public bucket** → Create
-
-**Archivo guardado:** `photo.{ext}` (siempre se sobreescribe con `upsert: true`)
+Bucket **`profile`**, público. Guarda `photo.{ext}` sobreescribiendo siempre (`upsert: true`). La URL pública se persiste en `settings.profile_photo`.
 
 ---
 
-## Variables de entorno
+## Variables y secrets
 
-### En el proyecto (`.env`)
+### Front (`.env` local y Vercel)
 
 ```env
-VITE_SUPABASE_URL=https://xxxxxxxxxxxx.supabase.co
-VITE_SUPABASE_ANON_KEY=eyJhbGci...
+VITE_SUPABASE_URL=https://<PROJECT_REF>.supabase.co
+VITE_SUPABASE_ANON_KEY=<ANON_KEY>
 ```
 
-Se obtienen en Supabase → Settings → API.
+Son las únicas dos que lee el código. Se obtienen en Supabase → Settings → API Keys.
 
-### En Vercel (Settings → Environment Variables)
+### Edge Function Secrets (Supabase → Edge Functions → Secrets)
 
-Las mismas dos variables que en `.env`. Sin esto la app en producción no conecta a Supabase.
+| Secret | Usado por | Obligatorio |
+|---|---|---|
+| `APP_URL` | send-confirmation, send-reminders | Sí en producción. Sin esto los links de cancelación apuntan a `http://localhost:3000` y las funciones lo loguean como error |
+| `THERAPIST_EMAIL` | send-confirmation, send-cancellation | No. Si falta usa el `gmail_user` de `settings` |
 
-### En Supabase — Edge Function Secrets
+`SUPABASE_URL` y `SUPABASE_SERVICE_ROLE_KEY` los inyecta Supabase automáticamente.
 
-Se configuran en Supabase → Edge Functions → Secrets:
-
-| Secret | Descripción |
-|---|---|
-| `APP_URL` | URL de la app en Vercel. Se usa para armar el link de cancelación en los emails. |
-| `THERAPIST_EMAIL` | (Opcional) Email donde recibir notificaciones. Si no se configura, usa el `gmail_user` de la tabla `settings`. |
-
-`SUPABASE_URL` y `SUPABASE_SERVICE_ROLE_KEY` los provee Supabase automáticamente.
+> La service_role key no va en ningún archivo del repo. Para el cron se guarda en Supabase Vault.
 
 ---
 
-## Edge Function
+## Edge Functions
 
-**Ubicación:** `supabase/functions/send-confirmation/index.ts`
+Las tres leen las credenciales de Gmail desde `settings` usando la service_role key, por lo que saltean RLS. Si `settings` no tiene `gmail_user` y `gmail_app_password`, devuelven **500** y no se envía nada. El front muestra ese fallo en pantalla, pero **la reserva se guarda igual**: el email es best-effort.
 
-**Cuándo se invoca:** Cada vez que un paciente completa una reserva exitosa.
+| Función | Se dispara | Envía |
+|---|---|---|
+| `send-confirmation` | Al confirmar una reserva | Email al paciente (link de cancelar + botón de Google Calendar + `.ics`) y aviso a la profesional |
+| `send-cancellation` | Al cancelar, desde el link o desde el panel | Notifica a la contraparte con un `.ics` `METHOD:CANCEL` que borra el evento del calendario |
+| `send-reminders` | Cron cada 30 min | Recordatorio a los turnos que caen en la ventana de 24h o 2h, y marca el flag para no repetir |
 
-**Qué hace:**
-1. Recibe `{ to, name, date, time, appointmentId }`
-2. Lee `gmail_user` y `gmail_app_password` de la tabla `settings`
-3. Arma dos emails HTML: uno para el paciente (con link de cancelación) y uno para la profesional (aviso de nueva reserva)
-4. Los envía via Gmail SMTP usando `nodemailer`
+Los `.ics` usan `UID:<appointmentId>@lumina`. El UID debe coincidir entre confirmación y cancelación, si no el evento no se borra del calendario del paciente.
 
-**Para actualizar en Supabase:** Edge Functions → `send-confirmation` → Code → pegar contenido del archivo → Deploy.
+Para actualizar una función: Supabase → Edge Functions → seleccionar → pegar el contenido del archivo → Deploy.
 
-**Importante:** Si la tabla `settings` no tiene credenciales de Gmail, la función devuelve error 500. La profesional debe completar el wizard "Configurar Email" desde el panel antes de que los emails funcionen.
+---
+
+## Cron de recordatorios
+
+`send-reminders` corre cada 30 minutos vía `pg_cron`, que hace un `net.http_post` a la función.
+
+La service_role key que necesita el header `Authorization` se guarda en **Supabase Vault** y el job la lee en tiempo de ejecución. Ver `003_cron_send_reminders.sql`.
+
+```sql
+-- Ver el job
+select jobname, schedule, active from cron.job;
+
+-- Ver las últimas corridas
+select * from cron.job_run_details order by start_time desc limit 10;
+```
+
+La ventana de envío es `> 23h y <= 25h` para el de 24 horas y `> 1h y <= 3h` para el de 2. Con el cron cada 30 minutos, cada turno cae en la ventana varias veces, y lo que evita el reenvío son los flags `reminder_*_sent`.
+
+Las fechas se interpretan en `America/Argentina/Buenos_Aires` (UTC-3, hardcodeado).
 
 ---
 
@@ -224,121 +223,95 @@ Se configuran en Supabase → Edge Functions → Secrets:
 
 ```
 / (home)
-├── Ve la tarjeta de presentación (foto, nombre, título)
-├── Elige fecha en el calendario
-├── Elige horario disponible
-├── Completa nombre, email, teléfono, notas
-└── Confirma reserva
-    ├── Slot → "booked" en la DB
-    ├── Email de confirmación al paciente (con link para cancelar)
-    └── Email de aviso a la profesional
+├── Tarjeta de presentación (foto, nombre)
+├── Elige fecha → horario → completa sus datos
+└── Confirma
+    ├── Slot pasa a "booked"
+    ├── Email al paciente con .ics y link de cancelación
+    └── Aviso a la profesional
+        └── Si el email falla, la reserva igual queda hecha y se avisa en pantalla
 
-/cancelar?id=xxx (desde el link del email)
-├── Carga datos del turno
+/cancelar?id=xxx
 ├── Valida que falten más de 48 hs
-├── (si aplica) Confirma cancelación
-│   └── Slot vuelve a "available", datos del paciente se borran
-└── Pantalla de resultado (éxito / demasiado tarde / no encontrado)
+└── Cancela → slot vuelve a "available", se borran los datos, se notifica
 ```
-
----
 
 ## Flujo del administrador
 
 ```
-/login
-└── Ingresa email y contraseña → redirige a /admin
+/login → /admin
 
 /admin
-├── Ver todos los turnos (filtro por fecha)
-├── Marcar turno como completado / eliminar
-├── "Nuevo Horario" → CreateSlotsModal
-│   ├── Individual: fecha + hora
-│   ├── Rango: fecha + desde/hasta + duración → preview de slots
-│   └── Período: días de semana + rango de fechas + horario + duración
-├── "Foto de Perfil" → PhotoUpload (sube a Supabase Storage)
-├── "Configurar Email" → GmailSetup (wizard 5 pasos)
-└── "Cambiar Contraseña" → ChangePassword
+├── Vista día (lista filtrable) o vista semana
+├── Marcar completado / eliminar (si estaba reservado, notifica al paciente)
+├── "Nuevo Horario"      → individual / rango / período
+├── "Foto de Perfil"     → sube a Storage
+├── "Configurar Email"   → wizard de Gmail
+├── "Cambiar Contraseña"
+└── "Manual de Uso"
 ```
 
 ---
 
-## Deploy
+## Levantar una instancia nueva
 
-### Primera vez
+### 1. Supabase
 
-**Vercel:**
-1. Crear proyecto en vercel.com, conectar el repositorio
-2. Agregar en Settings → Environment Variables:
-   - `VITE_SUPABASE_URL`
-   - `VITE_SUPABASE_ANON_KEY`
-3. Deployar
+1. Crear proyecto nuevo (región `sa-east-1` para Argentina).
+2. SQL Editor → correr `001_appointments_and_settings.sql`.
+3. SQL Editor → correr `002_profile_storage_bucket.sql`.
+4. Authentication → Users → Add user: crear la cuenta de la profesional con su contraseña.
+5. **Authentication → Providers → Email → desactivar "Enable email signup".** Sin esto cualquiera puede registrarse y entrar al panel, porque el panel solo verifica que haya sesión iniciada.
+6. Edge Functions → deployar `send-confirmation`, `send-cancellation` y `send-reminders` con `verify_jwt` activado.
+7. Edge Functions → Secrets → cargar `APP_URL` (y `THERAPIST_EMAIL` si aplica).
+8. SQL Editor → correr `003_cron_send_reminders.sql` reemplazando la key y el project ref. No commitear el archivo editado.
 
-**Supabase:**
-1. Crear proyecto nuevo
-2. Crear tabla `appointments` con el schema de arriba
-3. Ejecutar SQL de `supabase/migrations/create_settings_table.sql`
-4. Ejecutar SQL de `supabase/migrations/public_read_profile_photo.sql`
-5. Crear bucket `profile` en Storage (público)
-6. Crear usuario: Authentication → Users → Add user
-7. Desactivar signup público: Authentication → Providers → Email → desactivar "Enable email signup"
-8. Crear Edge Function: Edge Functions → New Function → nombre `send-confirmation` → pegar código → Deploy
-9. Agregar secret `APP_URL` en Edge Functions → Secrets
+### 2. Vercel
 
-### Actualizaciones futuras
+1. Crear proyecto y conectar el repositorio.
+2. Settings → Environment Variables: `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY`.
+3. Deploy. El `vercel.json` ya trae los rewrites para que `/cancelar` y `/admin` no den 404 al refrescar.
+4. Volver a Supabase y cargar el `APP_URL` definitivo con el dominio de Vercel.
 
-- **Frontend:** push al repositorio → Vercel redeploya automáticamente
-- **Edge Function:** Supabase → Edge Functions → editar código → Deploy
+### 3. La profesional, desde el panel
+
+- Subir su foto
+- Completar el wizard "Configurar Email" (sin esto no sale ningún mail)
+- Cargar sus horarios
+
+### Actualizaciones
+
+- **Frontend:** push al repo → Vercel redeploya solo
+- **Edge Functions:** hay que deployarlas a mano, no van con el push
 
 ---
 
-## Nuevo cliente — Qué cambiar
+## Personalizar por cliente
 
-### Infraestructura (siempre)
+| Qué | Dónde |
+|---|---|
+| Título de la pestaña | `index.html` |
+| Nombre en la navbar | `src/components/Layout.tsx` |
+| Nombre y especialidad | `src/components/ProfileCard.tsx` |
+| Colores | `src/index.css` → `--color-primary`, `--color-primary-hover` |
+| Horas mínimas para cancelar | `src/components/CancelAppointment.tsx` → `CANCEL_HOURS_LIMIT` |
+| Textos y asuntos de los emails | `supabase/functions/*/index.ts` |
+| Nombre del remitente y del evento | `supabase/functions/*/index.ts` → `from:`, `SUMMARY:`, `ORGANIZER:` |
+| Zona horaria | `supabase/functions/send-reminders/index.ts` y los `.ics` |
 
-- Nuevo proyecto en Supabase con sus propias tablas, bucket y usuario
-- Nuevo proyecto en Vercel con las credenciales del nuevo Supabase
-
-### Cambios en el código
-
-| Qué | Archivo | Detalle |
-|---|---|---|
-| Título de la pestaña | `index.html` | `<title>` |
-| Nombre en la navbar | `src/components/Layout.tsx` | Texto del logo |
-| Nombre y título en tarjeta | `src/components/ProfileCard.tsx` | Nombre y especialidad |
-| Colores del tema | `src/index.css` | `--color-primary` y `--color-primary-hover` |
-| Horas límite para cancelar | `src/components/CancelAppointment.tsx` | Constante `CANCEL_HOURS_LIMIT` (default: 48) |
-| Texto de los emails | `supabase/functions/send-confirmation/index.ts` | `patientHtml` y `therapistHtml` |
-| Asunto de los emails | `supabase/functions/send-confirmation/index.ts` | Campos `subject:` |
-| URL de fallback | `supabase/functions/send-confirmation/index.ts` | Valor por defecto de `APP_URL` |
-
-### Lo que hace la profesional sola (sin tocar código)
-
-- **Subir foto:** Panel admin → "Foto de Perfil"
-- **Conectar Gmail:** Panel admin → "Configurar Email" → wizard
-- **Cambiar contraseña:** Panel admin → "Cambiar Contraseña"
-- **Crear horarios:** Panel admin → "Nuevo Horario" (individual, rango o período)
-
-### Checklist de cambio de cliente
+### Checklist
 
 ```
-[ ] Nuevo proyecto Supabase creado
-[ ] Tabla appointments creada con UNIQUE (date, time)
-[ ] GRANT SELECT, UPDATE ON appointments TO anon ejecutado
-[ ] RLS policies de appointments aplicadas (select, book, cancel, admin)
-[ ] SQL create_settings_table.sql ejecutado
-[ ] SQL public_read_profile_photo.sql ejecutado
-[ ] Bucket "profile" creado en Storage (público)
-[ ] Usuario de la profesional creado en Supabase Auth
-[ ] Signup público desactivado en Supabase
-[ ] Edge Function send-confirmation deployada
-[ ] Secret APP_URL cargado en Supabase
-[ ] Nuevo proyecto Vercel con credenciales del nuevo Supabase
-[ ] index.html → título actualizado
-[ ] Layout.tsx → nombre actualizado
-[ ] ProfileCard.tsx → nombre y especialidad actualizados
-[ ] index.css → colores ajustados (opcional)
-[ ] send-confirmation/index.ts → textos de email personalizados
-[ ] Profesional sube su foto desde el panel
-[ ] Profesional configura su Gmail desde el panel
+[ ] Proyecto Supabase creado
+[ ] 001 y 002 ejecutados
+[ ] Usuario admin creado
+[ ] Signup público desactivado
+[ ] 3 Edge Functions deployadas
+[ ] Secret APP_URL cargado
+[ ] 003 ejecutado (Vault + cron)
+[ ] Proyecto Vercel con las 2 variables
+[ ] APP_URL actualizado con el dominio final
+[ ] Textos e identidad personalizados
+[ ] Foto y Gmail cargados desde el panel
+[ ] Prueba end-to-end: reserva, .ics, cancelación y recordatorios
 ```

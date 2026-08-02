@@ -1,21 +1,39 @@
 import { supabase } from '../lib/supabase';
 import { Appointment, AppointmentStatus } from '../types';
 
-export const emailService = {
-  async sendConfirmation(params: { to: string; name: string; date: string; time: string; appointmentId: string }) {
+export interface EmailResult {
+  ok: boolean;
+  message?: string;
+}
+
+// functions.invoke no lanza en HTTP 500: devuelve el fallo en `error`, por eso
+// un try/catch acá no atrapa nada y los emails caídos pasaban desapercibidos.
+const invokeEmail = async (fn: string, body: Record<string, unknown>): Promise<EmailResult> => {
+  const { error } = await supabase.functions.invoke(fn, { body });
+  if (!error) return { ok: true };
+
+  let detail = error.message;
+  const context = (error as { context?: { json?: () => Promise<{ error?: string }> } }).context;
+  if (context?.json) {
     try {
-      await supabase.functions.invoke('send-confirmation', { body: params });
+      const payload = await context.json();
+      if (payload?.error) detail = payload.error;
     } catch {
-      console.warn('No se pudo enviar el email de confirmación');
+      // el cuerpo no era JSON; nos quedamos con error.message
     }
+  }
+
+  console.error(`[email] ${fn} falló: ${detail}`);
+  return { ok: false, message: detail };
+};
+
+export const emailService = {
+  sendConfirmation(params: { to: string; name: string; date: string; time: string; appointmentId: string }): Promise<EmailResult> {
+    return invokeEmail('send-confirmation', params);
   },
 
-  async sendCancellation(params: { name: string; email: string; date: string; time: string; appointmentId: string; cancelledBy: 'patient' | 'therapist' }) {
-    try {
-      await supabase.functions.invoke('send-cancellation', { body: params });
-    } catch {
-      console.warn('No se pudo enviar el email de cancelación');
-    }
+  sendCancellation(params: { name: string; email: string; date: string; time: string; appointmentId: string; cancelledBy: 'patient' | 'therapist' }): Promise<EmailResult> {
+    return invokeEmail('send-cancellation', params);
   },
 };
 

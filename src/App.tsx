@@ -11,7 +11,7 @@ import { AdminDashboard } from './components/AdminDashboard';
 import { appointmentService, emailService } from './services/api';
 import { Appointment } from './types';
 import { format } from 'date-fns';
-import { CheckCircle2, Info } from 'lucide-react';
+import { CheckCircle2, Info, AlertTriangle } from 'lucide-react';
 import { CancelAppointment } from './components/CancelAppointment';
 import { ProfileCard } from './components/ProfileCard';
 import { motion, AnimatePresence } from 'motion/react';
@@ -25,6 +25,7 @@ const PatientBooking: React.FC = () => {
   const [bookingLoading, setBookingLoading] = React.useState(false);
   const [calendarRefresh, setCalendarRefresh] = React.useState(0);
   const [bookedSlot, setBookedSlot] = React.useState<{ date: string; time: string; name: string } | null>(null);
+  const [emailWarning, setEmailWarning] = React.useState<string | null>(null);
 
   const fetchSlots = React.useCallback(async () => {
     setLoadingSlots(true);
@@ -46,13 +47,14 @@ const PatientBooking: React.FC = () => {
     try {
       const slot = availableSlots.find(s => s.id === selectedSlotId)!;
       await appointmentService.bookAppointment(selectedSlotId, data);
-      await emailService.sendConfirmation({
+      const email = await emailService.sendConfirmation({
         to: data.email,
         name: data.name,
         date: slot.date,
         time: slot.time,
         appointmentId: selectedSlotId,
       });
+      setEmailWarning(email.ok ? null : (email.message ?? 'No pudimos enviar el email de confirmación.'));
       setBookedSlot({ date: slot.date, time: slot.time, name: data.name });
       setStep(3);
       setCalendarRefresh(r => r + 1);
@@ -74,7 +76,17 @@ const PatientBooking: React.FC = () => {
           <CheckCircle2 size={32} />
         </div>
         <h2 className="text-2xl font-bold mb-2">¡Reserva Exitosa!</h2>
-        <p className="text-slate-500 mb-6">Te enviamos los detalles a tu email junto con el archivo para agregar el turno a tu calendario.</p>
+        {emailWarning ? (
+          <div className="flex items-start gap-3 text-left bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6">
+            <AlertTriangle size={20} className="text-amber-600 shrink-0 mt-0.5" />
+            <div>
+              <p className="text-sm font-semibold text-amber-900">Tu turno quedó reservado, pero no pudimos enviarte el email.</p>
+              <p className="text-xs text-amber-800 mt-1">Anotá la fecha y hora de abajo. Detalle técnico: {emailWarning}</p>
+            </div>
+          </div>
+        ) : (
+          <p className="text-slate-500 mb-6">Te enviamos los detalles a tu email junto con el archivo para agregar el turno a tu calendario.</p>
+        )}
         {bookedSlot && (
           <div className="bg-slate-50 rounded-xl p-4 mb-6 text-left space-y-2">
             <div className="flex justify-between text-sm">
@@ -94,7 +106,7 @@ const PatientBooking: React.FC = () => {
           </div>
         )}
         <button
-          onClick={() => { setStep(1); setSelectedSlotId(null); setBookedSlot(null); fetchSlots(); }}
+          onClick={() => { setStep(1); setSelectedSlotId(null); setBookedSlot(null); setEmailWarning(null); fetchSlots(); }}
           className="w-full py-3 bg-primary text-white rounded-xl font-medium hover:bg-primary-hover transition-colors"
         >
           Volver al Inicio

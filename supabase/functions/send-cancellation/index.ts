@@ -17,17 +17,17 @@ function buildCancelIcs(date: string, time: string, appointmentId: string, gmail
   return [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//Samanta Vargas//Turnero//ES',
+    'PRODID:-//Lumina//Turnero//ES',
     'CALSCALE:GREGORIAN',
     'METHOD:CANCEL',
     'BEGIN:VEVENT',
-    `UID:${appointmentId}@samantavargas`,
+    `UID:${appointmentId}@lumina`,
     `DTSTART;TZID=America/Argentina/Buenos_Aires:${dtStart}`,
     `DTEND;TZID=America/Argentina/Buenos_Aires:${dtEnd}`,
-    'SUMMARY:Consulta psicológica — Samanta Vargas',
+    'SUMMARY:Consulta psicológica — Lumina',
     'STATUS:CANCELLED',
     'SEQUENCE:1',
-    `ORGANIZER;CN=Samanta Vargas:mailto:${gmailUser}`,
+    `ORGANIZER;CN=Lumina:mailto:${gmailUser}`,
     'END:VEVENT',
     'END:VCALENDAR',
   ].join('\r\n');
@@ -76,7 +76,7 @@ serve(async (req) => {
     if (cancelledBy === 'patient') {
       // Paciente canceló → notificar a la terapeuta con .ics CANCEL
       await transporter.sendMail({
-        from: `"Samanta Vargas" <${GMAIL_USER}>`,
+        from: `"Lumina" <${GMAIL_USER}>`,
         to: THERAPIST_EMAIL,
         subject: `Turno cancelado por el paciente: ${name} — ${date} ${time}`,
         html: `
@@ -98,7 +98,7 @@ serve(async (req) => {
       // Psicóloga canceló → notificar al paciente con .ics CANCEL + aviso a la terapeuta
       await Promise.all([
         transporter.sendMail({
-          from: `"Samanta Vargas" <${GMAIL_USER}>`,
+          from: `"Lumina" <${GMAIL_USER}>`,
           to: email,
           subject: `Tu turno fue cancelado — ${date} ${time}`,
           html: `
@@ -116,7 +116,7 @@ serve(async (req) => {
           attachments: [icsAttachment],
         }),
         transporter.sendMail({
-          from: `"Samanta Vargas" <${GMAIL_USER}>`,
+          from: `"Lumina" <${GMAIL_USER}>`,
           to: THERAPIST_EMAIL,
           subject: `Turno cancelado: ${name} — ${date} ${time}`,
           html: `
