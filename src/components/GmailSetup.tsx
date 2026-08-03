@@ -88,15 +88,15 @@ export const GmailSetup: React.FC<Props> = ({ onComplete }) => {
   if (done) {
     return (
       <div className="text-center py-8">
-        <div className="w-16 h-16 bg-green-50 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
+        <div className="w-16 h-16 bg-accent/10 text-accent rounded-full flex items-center justify-center mx-auto mb-6">
           <CheckCircle2 size={32} />
         </div>
         <h3 className="text-xl font-bold mb-2">¡Listo!</h3>
-        <p className="text-slate-500 text-sm mb-1">Los emails se van a enviar desde:</p>
+        <p className="text-muted text-sm mb-1">Los emails se van a enviar desde:</p>
         <p className="font-mono text-primary font-semibold mb-6">{gmail}</p>
         <button
           onClick={onComplete}
-          className="px-6 py-3 bg-primary text-white rounded-xl font-medium hover:bg-primary-hover transition-colors"
+          className="px-6 py-3 bg-primary text-white rounded-awd font-medium hover:bg-primary-hover transition-colors"
         >
           Volver al panel
         </button>
@@ -111,7 +111,7 @@ export const GmailSetup: React.FC<Props> = ({ onComplete }) => {
         <div
           key={i}
           className={`h-1 flex-1 rounded-full transition-all duration-300 ${
-            i < currentStep ? 'bg-primary' : i === currentStep ? 'bg-primary/50' : 'bg-slate-100'
+            i < currentStep ? 'bg-primary' : i === currentStep ? 'bg-primary/50' : 'bg-elevated'
           }`}
         />
       ))}
@@ -123,17 +123,17 @@ export const GmailSetup: React.FC<Props> = ({ onComplete }) => {
       <div>
         <ProgressBar />
         <div className="text-center mb-6">
-          <div className="w-14 h-14 bg-primary/10 text-primary rounded-2xl flex items-center justify-center mx-auto mb-4">
+          <div className="w-14 h-14 bg-primary/10 text-primary rounded-awd flex items-center justify-center mx-auto mb-4">
             <Settings size={28} />
           </div>
-          <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2">Paso {currentStep + 1} de {totalSteps}</p>
-          <h3 className="text-xl font-bold text-slate-900 mb-1">Ingresá tus datos</h3>
-          <p className="text-slate-500 text-sm">Pegá acá lo que copiaste de Google.</p>
+          <p className="text-xs font-bold uppercase tracking-widest text-muted mb-2">Paso {currentStep + 1} de {totalSteps}</p>
+          <h3 className="text-xl font-bold text-ink mb-1">Ingresá tus datos</h3>
+          <p className="text-muted text-sm">Pegá acá lo que copiaste de Google.</p>
         </div>
 
         <form onSubmit={handleSave} className="space-y-4">
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">
+            <label className="block text-xs font-bold uppercase tracking-wider text-muted mb-1.5">
               Tu dirección de Gmail
             </label>
             <input
@@ -142,11 +142,11 @@ export const GmailSetup: React.FC<Props> = ({ onComplete }) => {
               placeholder="tumail@gmail.com"
               value={gmail}
               onChange={e => setGmail(e.target.value)}
-              className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:outline-none text-sm"
+              className="w-full px-4 py-2.5 border border-line rounded-awd focus:ring-2 focus:ring-primary/20 focus:outline-none text-sm"
             />
           </div>
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">
+            <label className="block text-xs font-bold uppercase tracking-wider text-muted mb-1.5">
               Contraseña de Aplicación (16 letras)
             </label>
             <input
@@ -155,27 +155,27 @@ export const GmailSetup: React.FC<Props> = ({ onComplete }) => {
               placeholder="abcdefghijklmnop"
               value={appPassword}
               onChange={e => setAppPassword(e.target.value)}
-              className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:outline-none font-mono text-sm tracking-widest"
+              className="w-full px-4 py-2.5 border border-line rounded-awd focus:ring-2 focus:ring-primary/20 focus:outline-none font-mono text-sm tracking-widest"
             />
-            <p className="text-xs text-slate-400 mt-1">Con o sin espacios, funciona igual.</p>
+            <p className="text-xs text-muted mt-1">Con o sin espacios, funciona igual.</p>
           </div>
 
           {error && (
-            <p className="text-sm text-red-500 bg-red-50 px-4 py-2 rounded-lg">{error}</p>
+            <p className="text-sm text-danger bg-danger/10 px-4 py-2 rounded-awd">{error}</p>
           )}
 
           <div className="flex gap-2 pt-2">
             <button
               type="button"
               onClick={() => setCurrentStep(s => s - 1)}
-              className="px-4 py-2.5 border border-slate-200 rounded-xl text-sm hover:bg-slate-50 flex items-center gap-1 transition-colors"
+              className="px-4 py-2.5 border border-line rounded-awd text-sm hover:bg-elevated flex items-center gap-1 transition-colors"
             >
               <ChevronLeft size={16} /> Atrás
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 py-2.5 bg-primary text-white rounded-xl text-sm font-semibold hover:bg-primary-hover disabled:bg-slate-300 transition-colors"
+              className="flex-1 py-2.5 bg-primary text-white rounded-awd text-sm font-semibold hover:bg-primary-hover disabled:bg-line transition-colors"
             >
               {loading ? 'Guardando...' : 'Guardar configuración'}
             </button>
@@ -193,18 +193,18 @@ export const GmailSetup: React.FC<Props> = ({ onComplete }) => {
       <ProgressBar />
 
       <div className="text-center mb-6">
-        <div className="w-14 h-14 bg-primary/10 text-primary rounded-2xl flex items-center justify-center mx-auto mb-4">
+        <div className="w-14 h-14 bg-primary/10 text-primary rounded-awd flex items-center justify-center mx-auto mb-4">
           <Icon size={28} />
         </div>
-        <p className="text-xs font-bold uppercase tracking-widest text-slate-400 mb-2">
+        <p className="text-xs font-bold uppercase tracking-widest text-muted mb-2">
           Paso {currentStep + 1} de {totalSteps}
         </p>
-        <h3 className="text-xl font-bold text-slate-900 mb-3">{step.title}</h3>
-        <p className="text-slate-600 text-sm leading-relaxed">{step.description}</p>
+        <h3 className="text-xl font-bold text-ink mb-3">{step.title}</h3>
+        <p className="text-muted text-sm leading-relaxed">{step.description}</p>
       </div>
 
       {'preview' in step && step.preview && (
-        <div className="bg-slate-900 text-green-400 font-mono text-lg tracking-[0.3em] text-center py-4 px-6 rounded-xl mb-4">
+        <div className="bg-ink text-accent font-mono text-lg tracking-[0.3em] text-center py-4 px-6 rounded-awd mb-4">
           {step.preview}
         </div>
       )}
@@ -212,7 +212,7 @@ export const GmailSetup: React.FC<Props> = ({ onComplete }) => {
       {'instructions' in step && step.instructions && (
         <ol className="space-y-2 mb-5">
           {(step.instructions as string[]).map((item, i) => (
-            <li key={i} className="flex items-start gap-3 text-sm text-slate-600">
+            <li key={i} className="flex items-start gap-3 text-sm text-muted">
               <span className="w-5 h-5 rounded-full bg-primary/10 text-primary text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">
                 {i + 1}
               </span>
@@ -223,7 +223,7 @@ export const GmailSetup: React.FC<Props> = ({ onComplete }) => {
       )}
 
       {step.detail && (
-        <p className="text-xs text-slate-400 leading-relaxed text-center mb-5">{step.detail}</p>
+        <p className="text-xs text-muted leading-relaxed text-center mb-5">{step.detail}</p>
       )}
 
       {step.action && (
@@ -231,7 +231,7 @@ export const GmailSetup: React.FC<Props> = ({ onComplete }) => {
           href={step.action.url}
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center justify-center gap-2 w-full py-2.5 border-2 border-primary text-primary rounded-xl text-sm font-semibold hover:bg-primary/5 transition-colors mb-3"
+          className="flex items-center justify-center gap-2 w-full py-2.5 border-2 border-primary text-primary rounded-awd text-sm font-semibold hover:bg-primary/5 transition-colors mb-3"
         >
           {step.action.label} <ExternalLink size={14} />
         </a>
@@ -241,14 +241,14 @@ export const GmailSetup: React.FC<Props> = ({ onComplete }) => {
         {currentStep > 0 && (
           <button
             onClick={() => setCurrentStep(s => s - 1)}
-            className="px-4 py-2.5 border border-slate-200 rounded-xl text-sm hover:bg-slate-50 flex items-center gap-1 transition-colors"
+            className="px-4 py-2.5 border border-line rounded-awd text-sm hover:bg-elevated flex items-center gap-1 transition-colors"
           >
             <ChevronLeft size={16} /> Atrás
           </button>
         )}
         <button
           onClick={() => setCurrentStep(s => s + 1)}
-          className="flex-1 py-2.5 bg-primary text-white rounded-xl text-sm font-semibold hover:bg-primary-hover flex items-center justify-center gap-1 transition-colors"
+          className="flex-1 py-2.5 bg-primary text-white rounded-awd text-sm font-semibold hover:bg-primary-hover flex items-center justify-center gap-1 transition-colors"
         >
           {currentStep === STEPS.length - 1 ? 'Ingresar mis datos' : step.tip ?? 'Siguiente'}
           <ChevronRight size={16} />

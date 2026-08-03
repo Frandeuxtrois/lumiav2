@@ -14,7 +14,7 @@ export const SlotSelector: React.FC<SlotSelectorProps> = ({ slots, selectedSlotI
     return (
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
         {[1, 2, 3, 4, 5, 6].map(i => (
-          <div key={i} className="h-10 bg-slate-100 animate-pulse rounded" />
+          <div key={i} className="h-10 bg-elevated animate-pulse rounded" />
         ))}
       </div>
     );
@@ -22,8 +22,8 @@ export const SlotSelector: React.FC<SlotSelectorProps> = ({ slots, selectedSlotI
 
   if (slots.length === 0) {
     return (
-      <div className="text-center py-8 border-2 border-dashed border-slate-100 rounded-xl">
-        <p className="text-sm text-slate-400">No hay horarios disponibles para este día.</p>
+      <div className="text-center py-8 border-2 border-dashed border-line rounded-awd">
+        <p className="text-sm text-muted">No hay horarios disponibles para este día.</p>
       </div>
     );
   }
@@ -40,10 +40,10 @@ export const SlotSelector: React.FC<SlotSelectorProps> = ({ slots, selectedSlotI
             onClick={() => !isBooked && onSlotSelect(slot.id)}
             disabled={isBooked}
             className={cn(
-              'py-2 px-3 border rounded text-sm text-center transition-all',
-              isBooked && 'border-slate-100 bg-slate-50 text-slate-300 cursor-not-allowed line-through',
-              !isBooked && !isSelected && 'border-slate-100 bg-slate-50 hover:border-primary text-slate-600',
-              isSelected && 'border-primary bg-[#E1E8E5] font-semibold text-primary',
+              'py-2 px-3 border rounded-awd text-sm text-center transition-all duration-300',
+              isBooked && 'border-line border-dashed bg-elevated text-muted cursor-not-allowed line-through',
+              !isBooked && !isSelected && 'border-line bg-surface text-ink hover:border-accent hover:text-accent lift',
+              isSelected && 'border-accent bg-accent/10 font-semibold text-accent',
             )}
           >
             {formatTime(slot.time)}

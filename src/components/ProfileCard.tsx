@@ -13,17 +13,17 @@ export const ProfileCard: React.FC = () => {
   }, []);
 
   return (
-    <div className="flex items-center gap-5 bg-white rounded-2xl border border-border-gray shadow-sm px-6 py-5 mb-6">
-      <div className="w-16 h-16 rounded-full overflow-hidden bg-slate-100 flex items-center justify-center border border-border-gray shrink-0">
+    <div className="flex items-center gap-5 bg-surface rounded-awd border border-line shadow-sm px-6 py-5 mb-6">
+      <div className="w-16 h-16 rounded-full overflow-hidden bg-elevated flex items-center justify-center border border-line shrink-0">
         {photoUrl
           ? <img src={photoUrl} alt={businessName} className="w-full h-full object-cover" />
-          : <UserCircle2 size={40} className="text-slate-300" />
+          : <UserCircle2 size={40} className="text-muted" />
         }
       </div>
       <div>
-        <h2 className="text-lg font-bold text-slate-900 leading-tight">{businessName}</h2>
+        <h2 className="text-lg font-bold text-ink leading-tight">{businessName}</h2>
         <p className="text-sm text-primary font-medium">Turnos online</p>
-        <p className="text-xs text-slate-400 mt-0.5">Elegí el día y horario que te quede mejor</p>
+        <p className="text-xs text-muted mt-0.5">Elegí el día y horario que te quede mejor</p>
       </div>
     </div>
   );

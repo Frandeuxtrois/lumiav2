@@ -15,6 +15,8 @@
   --accent:      #4F7368;
   --accent-hover:#3E5C53;
   --danger:      #B3453F;
+  --warning:     #9A6B1F;
+  --info:        #276E90;
   --line:        rgba(10, 49, 67, 0.12);
   --glass:       rgba(255, 255, 255, 0.70);
   --glass-line:  rgba(10, 49, 67, 0.10);
@@ -32,6 +34,8 @@ body.dark-mode {
   --accent-hover:#4E9179;
   /* Rojo reservado a acciones destructivas, nunca como color de marca. */
   --danger:      #EE6B66;
+  --warning:     #D9A441;
+  --info:        #5FA8D0;
   --line:        rgba(255, 255, 255, 0.09);
   --glass:       rgba(255, 255, 255, 0.04);
   --glass-line:  rgba(255, 255, 255, 0.13);
@@ -50,6 +54,8 @@ body.dark-mode {
   --color-accent:       var(--accent);
   --color-accent-hover: var(--accent-hover);
   --color-danger:       var(--danger);
+  --color-warning:      var(--warning);
+  --color-info:         var(--info);
   --color-line:         var(--line);
   --color-glass:        var(--glass);
   --color-glass-line:   var(--glass-line);

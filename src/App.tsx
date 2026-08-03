@@ -80,44 +80,44 @@ const ClientBooking: React.FC = () => {
       <motion.div
         initial={{ opacity: 0, y: 10 }}
         animate={{ opacity: 1, y: 0 }}
-        className="max-w-md mx-auto text-center bg-white p-8 rounded-2xl border border-border-gray shadow-sm"
+        className="max-w-md mx-auto text-center bg-surface p-8 rounded-awd border border-line shadow-sm"
       >
-        <div className="w-16 h-16 bg-green-50 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
+        <div className="w-16 h-16 bg-accent/10 text-accent rounded-full flex items-center justify-center mx-auto mb-6">
           <CheckCircle2 size={32} />
         </div>
         <h2 className="text-2xl font-bold mb-2">¡Reserva Exitosa!</h2>
         {emailWarning ? (
-          <div className="flex items-start gap-3 text-left bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6">
-            <AlertTriangle size={20} className="text-amber-600 shrink-0 mt-0.5" />
+          <div className="flex items-start gap-3 text-left bg-warning/10 border border-warning/30 rounded-awd p-4 mb-6">
+            <AlertTriangle size={20} className="text-warning shrink-0 mt-0.5" />
             <div>
-              <p className="text-sm font-semibold text-amber-900">Tu turno quedó reservado, pero no pudimos enviarte el email.</p>
-              <p className="text-xs text-amber-800 mt-1">Anotá la fecha y hora de abajo. Detalle técnico: {emailWarning}</p>
+              <p className="text-sm font-semibold text-ink">Tu turno quedó reservado, pero no pudimos enviarte el email.</p>
+              <p className="text-xs text-muted mt-1">Anotá la fecha y hora de abajo. Detalle técnico: {emailWarning}</p>
             </div>
           </div>
         ) : (
-          <p className="text-slate-500 mb-6">Te enviamos los detalles a tu email junto con el archivo para agregar el turno a tu calendario.</p>
+          <p className="text-muted mb-6">Te enviamos los detalles a tu email junto con el archivo para agregar el turno a tu calendario.</p>
         )}
         {bookedSlot && (
-          <div className="bg-slate-50 rounded-xl p-4 mb-6 text-left space-y-2">
+          <div className="bg-elevated rounded-awd p-4 mb-6 text-left space-y-2">
             <div className="flex justify-between text-sm">
-              <span className="text-slate-500">Cliente</span>
-              <span className="font-medium text-slate-900">{bookedSlot.name}</span>
+              <span className="text-muted">Cliente</span>
+              <span className="font-medium text-ink">{bookedSlot.name}</span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-slate-500">Fecha</span>
-              <span className="font-medium text-slate-900 capitalize">
+              <span className="text-muted">Fecha</span>
+              <span className="font-medium text-ink capitalize">
                 {new Date(bookedSlot.date + 'T12:00:00').toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' })}
               </span>
             </div>
             <div className="flex justify-between text-sm">
-              <span className="text-slate-500">Hora</span>
-              <span className="font-medium text-slate-900">{bookedSlot.time.slice(0, 5)}</span>
+              <span className="text-muted">Hora</span>
+              <span className="font-medium text-ink">{bookedSlot.time.slice(0, 5)}</span>
             </div>
           </div>
         )}
         <button
           onClick={() => { setStep(1); setSelectedSlotId(null); setBookedSlot(null); setEmailWarning(null); fetchSlots(); }}
-          className="w-full py-3 bg-primary text-white rounded-xl font-medium hover:bg-primary-hover transition-colors"
+          className="w-full py-3 bg-primary text-white rounded-awd font-medium hover:bg-primary-hover transition-colors"
         >
           Volver al Inicio
         </button>
@@ -129,16 +129,16 @@ const ClientBooking: React.FC = () => {
     <div>
     <ProfileCard />
     {bookingError && (
-      <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6">
-        <AlertTriangle size={20} className="text-amber-600 shrink-0 mt-0.5" />
-        <p className="text-sm font-medium text-amber-900">{bookingError}</p>
+      <div className="flex items-start gap-3 bg-warning/10 border border-warning/30 rounded-awd p-4 mb-6">
+        <AlertTriangle size={20} className="text-warning shrink-0 mt-0.5" />
+        <p className="text-sm font-medium text-ink">{bookingError}</p>
       </div>
     )}
     <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
       <div className="md:col-span-5 flex flex-col gap-6">
-        <div className="bg-white rounded-2xl shadow-sm border border-border-gray p-6">
+        <div className="bg-surface rounded-awd shadow-sm border border-line p-6">
           <h2 className="text-lg font-semibold mb-1">Paso 1: Fecha y Hora</h2>
-          <p className="text-xs text-slate-500 mb-6">Selecciona el momento ideal para tu turno.</p>
+          <p className="text-xs text-muted mb-6">Selecciona el momento ideal para tu turno.</p>
           
           <Calendar
             selectedDate={selectedDate}
@@ -147,7 +147,7 @@ const ClientBooking: React.FC = () => {
           />
 
           <div className="mt-8">
-            <p className="text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-3">Horarios Disponibles</p>
+            <p className="text-[10px] font-bold uppercase tracking-wider text-muted mb-3">Horarios Disponibles</p>
             <SlotSelector 
               slots={availableSlots} 
               selectedSlotId={selectedSlotId} 
@@ -159,7 +159,7 @@ const ClientBooking: React.FC = () => {
           <button 
             disabled={!selectedSlotId}
             onClick={() => setStep(2)}
-            className="w-full bg-primary text-white font-medium py-3 rounded-xl shadow-lg shadow-green-900/10 hover:bg-primary-hover disabled:bg-slate-300 disabled:shadow-none transition-all mt-8"
+            className="w-full bg-primary text-white font-medium py-3 rounded-awd shadow-lg shadow-awd hover:bg-primary-hover disabled:bg-line disabled:shadow-none transition-all mt-8"
           >
             Continuar Reserva
           </button>
@@ -174,25 +174,25 @@ const ClientBooking: React.FC = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="bg-white rounded-2xl shadow-sm border border-border-gray p-8 text-center"
+              className="bg-surface rounded-awd shadow-sm border border-line p-8 text-center"
             >
-              <div className="w-12 h-12 bg-slate-50 text-slate-400 rounded-full flex items-center justify-center mx-auto mb-4">
+              <div className="w-12 h-12 bg-elevated text-muted rounded-full flex items-center justify-center mx-auto mb-4">
                 <Info size={24} />
               </div>
-              <h3 className="font-semibold text-slate-900">Selecciona un horario para continuar</h3>
-              <p className="text-sm text-slate-500 mt-2">Una vez elegido el horario, habilitaremos el formulario de contacto.</p>
+              <h3 className="font-semibold text-ink">Selecciona un horario para continuar</h3>
+              <p className="text-sm text-muted mt-2">Una vez elegido el horario, habilitaremos el formulario de contacto.</p>
             </motion.div>
           ) : (
             <motion.div 
               key="form"
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
-              className="bg-white rounded-2xl shadow-sm border border-border-gray p-8"
+              className="bg-surface rounded-awd shadow-sm border border-line p-8"
             >
               <div className="flex items-center justify-between mb-6">
                 <div>
                   <h2 className="text-lg font-semibold">Paso 2: Tus Datos</h2>
-                  <p className="text-xs text-slate-500 mt-1">Completa la información para finalizar.</p>
+                  <p className="text-xs text-muted mt-1">Completa la información para finalizar.</p>
                 </div>
                 <button onClick={() => setStep(1)} className="text-xs text-primary font-bold uppercase underline">Cambiar fecha</button>
               </div>

@@ -144,16 +144,16 @@ export const CreateSlotsModal: React.FC<Props> = ({ onClose, onSuccess }) => {
   if (done) {
     return (
       <div className="text-center py-6">
-        <div className="w-16 h-16 bg-green-50 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
+        <div className="w-16 h-16 bg-accent/10 text-accent rounded-full flex items-center justify-center mx-auto mb-4">
           <CheckCircle2 size={32} />
         </div>
         <h3 className="text-xl font-bold mb-1">
           {createdCount === 1 ? '1 horario creado' : `${createdCount} horarios creados`}
         </h3>
-        <p className="text-slate-500 text-sm mb-6">Ya aparecen disponibles para los clientes.</p>
+        <p className="text-muted text-sm mb-6">Ya aparecen disponibles para los clientes.</p>
         <button
           onClick={onSuccess}
-          className="px-6 py-2.5 bg-primary text-white rounded-xl text-sm font-semibold hover:bg-primary-hover transition-colors"
+          className="px-6 py-2.5 bg-primary text-white rounded-awd text-sm font-semibold hover:bg-primary-hover transition-colors"
         >
           Listo
         </button>
@@ -167,22 +167,22 @@ export const CreateSlotsModal: React.FC<Props> = ({ onClose, onSuccess }) => {
     { id: 'periodo', label: 'Período', icon: CalendarRange },
   ] as const;
 
-  const labelClass = 'block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5';
-  const inputClass = 'w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-primary/20 focus:outline-none';
+  const labelClass = 'block text-xs font-bold uppercase tracking-wider text-muted mb-1.5';
+  const inputClass = 'w-full px-3 py-2 border border-line rounded-awd text-sm focus:ring-2 focus:ring-primary/20 focus:outline-none';
 
   return (
     <div>
       {/* Mode tabs */}
-      <div className="flex gap-2 mb-6 bg-slate-100 p-1 rounded-xl">
+      <div className="flex gap-2 mb-6 bg-elevated p-1 rounded-awd">
         {MODES.map(({ id, label, icon: Icon }) => (
           <button
             key={id}
             onClick={() => { setMode(id); setError(''); }}
             className={cn(
-              'flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-sm font-semibold transition-all',
+              'flex-1 flex items-center justify-center gap-1.5 py-2 rounded-awd text-sm font-semibold transition-all',
               mode === id
-                ? 'bg-white text-slate-900 shadow-sm'
-                : 'text-slate-500 hover:text-slate-700'
+                ? 'bg-surface text-ink shadow-sm'
+                : 'text-muted hover:text-ink'
             )}
           >
             <Icon size={14} />
@@ -204,7 +204,7 @@ export const CreateSlotsModal: React.FC<Props> = ({ onClose, onSuccess }) => {
               <input type="time" value={indTime} onChange={e => setIndTime(e.target.value)} className={inputClass} />
             </div>
           </div>
-          <div className="bg-slate-50 rounded-xl p-3 text-sm text-slate-600">
+          <div className="bg-elevated rounded-awd p-3 text-sm text-muted">
             Se va a crear <strong>1 horario</strong> el {indDate ? format(parseISO(indDate), "d 'de' MMMM", { locale: es }) : '—'} a las {indTime} hs.
           </div>
         </div>
@@ -235,10 +235,10 @@ export const CreateSlotsModal: React.FC<Props> = ({ onClose, onSuccess }) => {
                   key={d.value}
                   onClick={() => setRangoDuration(d.value)}
                   className={cn(
-                    'flex-1 py-2 rounded-lg text-xs font-bold border transition-all',
+                    'flex-1 py-2 rounded-awd text-xs font-bold border transition-all',
                     rangoDuration === d.value
                       ? 'bg-primary text-white border-primary'
-                      : 'border-slate-200 text-slate-600 hover:border-primary/40'
+                      : 'border-line text-muted hover:border-primary/40'
                   )}
                 >
                   {d.label}
@@ -248,17 +248,17 @@ export const CreateSlotsModal: React.FC<Props> = ({ onClose, onSuccess }) => {
           </div>
 
           {/* Preview */}
-          <div className="bg-slate-50 rounded-xl p-3">
+          <div className="bg-elevated rounded-awd p-3">
             {rangoTimes.length === 0 ? (
-              <p className="text-sm text-slate-400">El rango no genera horarios. Verificá las horas.</p>
+              <p className="text-sm text-muted">El rango no genera horarios. Verificá las horas.</p>
             ) : (
               <>
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+                <p className="text-xs font-bold text-muted uppercase tracking-wider mb-2">
                   {rangoTimes.length} horario{rangoTimes.length > 1 ? 's' : ''} a crear
                 </p>
                 <div className="flex flex-wrap gap-1.5">
                   {rangoTimes.map(t => (
-                    <span key={t} className="px-2 py-1 bg-primary/10 text-primary text-xs font-mono rounded-lg">{t}</span>
+                    <span key={t} className="px-2 py-1 bg-primary/10 text-primary text-xs font-mono rounded-awd">{t}</span>
                   ))}
                 </div>
               </>
@@ -278,10 +278,10 @@ export const CreateSlotsModal: React.FC<Props> = ({ onClose, onSuccess }) => {
                   key={d.value}
                   onClick={() => toggleWeekday(d.value)}
                   className={cn(
-                    'flex-1 py-2 rounded-lg text-xs font-bold border transition-all',
+                    'flex-1 py-2 rounded-awd text-xs font-bold border transition-all',
                     periodoWeekdays.includes(d.value)
                       ? 'bg-primary text-white border-primary'
-                      : 'border-slate-200 text-slate-600 hover:border-primary/40'
+                      : 'border-line text-muted hover:border-primary/40'
                   )}
                 >
                   {d.label}
@@ -317,10 +317,10 @@ export const CreateSlotsModal: React.FC<Props> = ({ onClose, onSuccess }) => {
                   key={d.value}
                   onClick={() => setPeriodoDuration(d.value)}
                   className={cn(
-                    'flex-1 py-2 rounded-lg text-xs font-bold border transition-all',
+                    'flex-1 py-2 rounded-awd text-xs font-bold border transition-all',
                     periodoDuration === d.value
                       ? 'bg-primary text-white border-primary'
-                      : 'border-slate-200 text-slate-600 hover:border-primary/40'
+                      : 'border-line text-muted hover:border-primary/40'
                   )}
                 >
                   {d.label}
@@ -330,22 +330,22 @@ export const CreateSlotsModal: React.FC<Props> = ({ onClose, onSuccess }) => {
           </div>
 
           {/* Preview */}
-          <div className="bg-slate-50 rounded-xl p-3">
+          <div className="bg-elevated rounded-awd p-3">
             {periodoTotal === 0 ? (
-              <p className="text-sm text-slate-400">
+              <p className="text-sm text-muted">
                 {periodoWeekdays.length === 0 ? 'Seleccioná al menos un día.' : 'El rango no genera horarios. Verificá los datos.'}
               </p>
             ) : (
               <div className="space-y-2">
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                <p className="text-xs font-bold text-muted uppercase tracking-wider">
                   {periodoTotal} horario{periodoTotal > 1 ? 's' : ''} en {periodoDates.length} día{periodoDates.length > 1 ? 's' : ''}
                 </p>
                 <div className="flex flex-wrap gap-1.5">
                   {periodoTimes.map(t => (
-                    <span key={t} className="px-2 py-1 bg-primary/10 text-primary text-xs font-mono rounded-lg">{t}</span>
+                    <span key={t} className="px-2 py-1 bg-primary/10 text-primary text-xs font-mono rounded-awd">{t}</span>
                   ))}
                 </div>
-                <p className="text-xs text-slate-400">
+                <p className="text-xs text-muted">
                   {periodoFrom && periodoTo
                     ? `Del ${format(parseISO(periodoFrom), "d 'de' MMM", { locale: es })} al ${format(parseISO(periodoTo), "d 'de' MMM", { locale: es })}`
                     : ''}
@@ -356,19 +356,19 @@ export const CreateSlotsModal: React.FC<Props> = ({ onClose, onSuccess }) => {
         </div>
       )}
 
-      {error && <p className="text-sm text-red-500 bg-red-50 px-4 py-2 rounded-lg mt-3">{error}</p>}
+      {error && <p className="text-sm text-danger bg-danger/10 px-4 py-2 rounded-awd mt-3">{error}</p>}
 
       <div className="flex gap-2 mt-5">
         <button
           onClick={onClose}
-          className="px-4 py-2.5 border border-slate-200 rounded-xl text-sm hover:bg-slate-50 transition-colors"
+          className="px-4 py-2.5 border border-line rounded-awd text-sm hover:bg-elevated transition-colors"
         >
           Cancelar
         </button>
         <button
           onClick={handleSubmit}
           disabled={loading}
-          className="flex-1 py-2.5 bg-primary text-white rounded-xl text-sm font-semibold hover:bg-primary-hover disabled:bg-slate-300 transition-colors"
+          className="flex-1 py-2.5 bg-primary text-white rounded-awd text-sm font-semibold hover:bg-primary-hover disabled:bg-line transition-colors"
         >
           {loading ? 'Creando...' : mode === 'individual' ? 'Crear horario' : 'Crear horarios'}
         </button>

@@ -18,16 +18,16 @@ export const ConfirmModal: React.FC<Props> = ({
   onConfirm,
   onCancel,
 }) => (
-  <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
-    <div className="bg-white rounded-2xl p-6 w-full max-w-sm shadow-2xl">
+  <div className="fixed inset-0 bg-ink/40 backdrop-blur-sm z-[200] flex items-center justify-center p-4">
+    <div className="bg-surface glass rounded-awd p-6 w-full max-w-sm shadow-awd">
       <div className="flex flex-col items-center text-center mb-5">
-        <div className={`w-14 h-14 rounded-full flex items-center justify-center mb-4 ${warning ? 'bg-amber-50 text-amber-500' : 'bg-red-50 text-red-500'}`}>
+        <div className={`w-14 h-14 rounded-full flex items-center justify-center mb-4 ${warning ? 'bg-warning/10 text-warning' : 'bg-danger/10 text-danger'}`}>
           {warning ? <AlertTriangle size={28} /> : <Trash2 size={28} />}
         </div>
-        <h3 className="text-lg font-bold text-slate-900 mb-1">{title}</h3>
-        <p className="text-sm text-slate-500">{message}</p>
+        <h3 className="text-lg font-bold text-ink mb-1">{title}</h3>
+        <p className="text-sm text-muted">{message}</p>
         {warning && (
-          <div className="mt-3 bg-amber-50 border border-amber-100 rounded-xl px-4 py-3 text-sm text-amber-700 text-left w-full">
+          <div className="mt-3 bg-warning/10 border border-warning/25 rounded-awd px-4 py-3 text-sm text-warning text-left w-full">
             <strong>Atención:</strong> {warning}
           </div>
         )}
@@ -35,14 +35,21 @@ export const ConfirmModal: React.FC<Props> = ({
       <div className="flex gap-2">
         <button
           onClick={onCancel}
-          className="flex-1 px-4 py-2.5 border border-slate-200 rounded-xl text-sm font-medium hover:bg-slate-50 transition-colors"
+          className="flex-1 px-4 py-2.5 border border-line rounded-awd text-sm font-medium hover:bg-elevated transition-colors"
         >
           Cancelar
         </button>
+        {/* Destructivo: contorno + icono, nunca relleno solido — no debe competir
+            con el boton primario ni depender de distinguir el tono. */}
         <button
           onClick={onConfirm}
-          className={`flex-1 px-4 py-2.5 rounded-xl text-sm font-semibold text-white transition-colors ${warning ? 'bg-amber-500 hover:bg-amber-600' : 'bg-red-500 hover:bg-red-600'}`}
+          className={`flex-1 px-4 py-2.5 flex items-center justify-center gap-2 rounded-awd text-sm font-semibold bg-transparent border transition-colors duration-300 ${
+            warning
+              ? 'border-warning text-warning hover:bg-warning/10'
+              : 'border-danger text-danger hover:bg-danger/10'
+          }`}
         >
+          {warning ? <AlertTriangle size={15} /> : <Trash2 size={15} />}
           {confirmLabel}
         </button>
       </div>

@@ -47,14 +47,14 @@ export const ChangePassword: React.FC<Props> = ({ onComplete }) => {
   if (done) {
     return (
       <div className="text-center py-8">
-        <div className="w-16 h-16 bg-green-50 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
+        <div className="w-16 h-16 bg-accent/10 text-accent rounded-full flex items-center justify-center mx-auto mb-6">
           <CheckCircle2 size={32} />
         </div>
         <h3 className="text-xl font-bold mb-2">¡Contraseña actualizada!</h3>
-        <p className="text-slate-500 text-sm mb-6">La próxima vez que inicies sesión usá la nueva contraseña.</p>
+        <p className="text-muted text-sm mb-6">La próxima vez que inicies sesión usá la nueva contraseña.</p>
         <button
           onClick={onComplete}
-          className="px-6 py-3 bg-primary text-white rounded-xl font-medium hover:bg-primary-hover transition-colors"
+          className="px-6 py-3 bg-primary text-white rounded-awd font-medium hover:bg-primary-hover transition-colors"
         >
           Volver al panel
         </button>
@@ -65,59 +65,59 @@ export const ChangePassword: React.FC<Props> = ({ onComplete }) => {
   return (
     <div>
       <div className="text-center mb-6">
-        <div className="w-14 h-14 bg-primary/10 text-primary rounded-2xl flex items-center justify-center mx-auto mb-4">
+        <div className="w-14 h-14 bg-primary/10 text-primary rounded-awd flex items-center justify-center mx-auto mb-4">
           <Lock size={28} />
         </div>
-        <h3 className="text-xl font-bold text-slate-900 mb-1">Cambiar contraseña</h3>
-        <p className="text-slate-500 text-sm">Ingresá tu contraseña actual y la nueva.</p>
+        <h3 className="text-xl font-bold text-ink mb-1">Cambiar contraseña</h3>
+        <p className="text-muted text-sm">Ingresá tu contraseña actual y la nueva.</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4">
         <div>
-          <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">Contraseña actual</label>
+          <label className="block text-xs font-bold uppercase tracking-wider text-muted mb-1.5">Contraseña actual</label>
           <input
             type="password"
             required
             value={current}
             onChange={e => setCurrent(e.target.value)}
-            className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:outline-none text-sm"
+            className="w-full px-4 py-2.5 border border-line rounded-awd focus:ring-2 focus:ring-primary/20 focus:outline-none text-sm"
           />
         </div>
         <div>
-          <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">Nueva contraseña</label>
+          <label className="block text-xs font-bold uppercase tracking-wider text-muted mb-1.5">Nueva contraseña</label>
           <input
             type="password"
             required
             value={next}
             onChange={e => setNext(e.target.value)}
-            className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:outline-none text-sm"
+            className="w-full px-4 py-2.5 border border-line rounded-awd focus:ring-2 focus:ring-primary/20 focus:outline-none text-sm"
           />
         </div>
         <div>
-          <label className="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1.5">Confirmar nueva contraseña</label>
+          <label className="block text-xs font-bold uppercase tracking-wider text-muted mb-1.5">Confirmar nueva contraseña</label>
           <input
             type="password"
             required
             value={confirm}
             onChange={e => setConfirm(e.target.value)}
-            className="w-full px-4 py-2.5 border border-slate-200 rounded-xl focus:ring-2 focus:ring-primary/20 focus:outline-none text-sm"
+            className="w-full px-4 py-2.5 border border-line rounded-awd focus:ring-2 focus:ring-primary/20 focus:outline-none text-sm"
           />
         </div>
 
-        {error && <p className="text-sm text-red-500 bg-red-50 px-4 py-2 rounded-lg">{error}</p>}
+        {error && <p className="text-sm text-danger bg-danger/10 px-4 py-2 rounded-awd">{error}</p>}
 
         <div className="flex gap-2 pt-2">
           <button
             type="button"
             onClick={onComplete}
-            className="px-4 py-2.5 border border-slate-200 rounded-xl text-sm hover:bg-slate-50 transition-colors"
+            className="px-4 py-2.5 border border-line rounded-awd text-sm hover:bg-elevated transition-colors"
           >
             Cancelar
           </button>
           <button
             type="submit"
             disabled={loading}
-            className="flex-1 py-2.5 bg-primary text-white rounded-xl text-sm font-semibold hover:bg-primary-hover disabled:bg-slate-300 transition-colors"
+            className="flex-1 py-2.5 bg-primary text-white rounded-awd text-sm font-semibold hover:bg-primary-hover disabled:bg-line transition-colors"
           >
             {loading ? 'Guardando...' : 'Cambiar contraseña'}
           </button>

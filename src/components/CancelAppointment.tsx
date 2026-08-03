@@ -79,7 +79,7 @@ export const CancelAppointment: React.FC = () => {
 
   if (loading) {
     return (
-      <div className="max-w-md mx-auto mt-16 text-center text-slate-400">
+      <div className="max-w-md mx-auto mt-16 text-center text-muted">
         <Loader2 className="animate-spin mx-auto mb-4" size={32} />
         <p>Cargando turno...</p>
       </div>
@@ -88,18 +88,18 @@ export const CancelAppointment: React.FC = () => {
 
   if (status === 'success') {
     return (
-      <div className="max-w-md mx-auto mt-12 bg-white rounded-2xl border border-border-gray shadow-sm p-8 text-center">
-        <div className="w-16 h-16 bg-green-50 text-green-600 rounded-full flex items-center justify-center mx-auto mb-6">
+      <div className="max-w-md mx-auto mt-12 bg-surface rounded-awd border border-line shadow-sm p-8 text-center">
+        <div className="w-16 h-16 bg-accent/10 text-accent rounded-full flex items-center justify-center mx-auto mb-6">
           <CheckCircle2 size={32} />
         </div>
         <h2 className="text-2xl font-bold mb-2">Turno cancelado</h2>
-        <p className="text-slate-500">Tu turno fue cancelado correctamente. El horario quedó disponible nuevamente.</p>
+        <p className="text-muted">Tu turno fue cancelado correctamente. El horario quedó disponible nuevamente.</p>
         {emailWarning && (
-          <div className="flex items-start gap-3 text-left bg-amber-50 border border-amber-200 rounded-xl p-4 mt-6">
-            <AlertTriangle size={20} className="text-amber-600 shrink-0 mt-0.5" />
+          <div className="flex items-start gap-3 text-left bg-warning/10 border border-warning/30 rounded-awd p-4 mt-6">
+            <AlertTriangle size={20} className="text-warning shrink-0 mt-0.5" />
             <div>
-              <p className="text-sm font-semibold text-amber-900">No pudimos enviar el aviso por email.</p>
-              <p className="text-xs text-amber-800 mt-1">La cancelación sí quedó registrada. Detalle técnico: {emailWarning}</p>
+              <p className="text-sm font-semibold text-ink">No pudimos enviar el aviso por email.</p>
+              <p className="text-xs text-muted mt-1">La cancelación sí quedó registrada. Detalle técnico: {emailWarning}</p>
             </div>
           </div>
         )}
@@ -109,36 +109,36 @@ export const CancelAppointment: React.FC = () => {
 
   if (status === 'too-late') {
     return (
-      <div className="max-w-md mx-auto mt-12 bg-white rounded-2xl border border-border-gray shadow-sm p-8 text-center">
-        <div className="w-16 h-16 bg-amber-50 text-amber-500 rounded-full flex items-center justify-center mx-auto mb-6">
+      <div className="max-w-md mx-auto mt-12 bg-surface rounded-awd border border-line shadow-sm p-8 text-center">
+        <div className="w-16 h-16 bg-warning/10 text-warning rounded-full flex items-center justify-center mx-auto mb-6">
           <AlertTriangle size={32} />
         </div>
         <h2 className="text-2xl font-bold mb-2">No es posible cancelar</h2>
-        <p className="text-slate-500">Solo se puede cancelar con al menos <strong>48 horas de anticipación</strong>. Para cancelar fuera de ese plazo, contactá directamente al consultorio.</p>
+        <p className="text-muted">Solo se puede cancelar con al menos <strong>48 horas de anticipación</strong>. Para cancelar fuera de ese plazo, contactá directamente al consultorio.</p>
       </div>
     );
   }
 
   if (status === 'not-found' || !appointment) {
     return (
-      <div className="max-w-md mx-auto mt-12 bg-white rounded-2xl border border-border-gray shadow-sm p-8 text-center">
-        <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
+      <div className="max-w-md mx-auto mt-12 bg-surface rounded-awd border border-line shadow-sm p-8 text-center">
+        <div className="w-16 h-16 bg-danger/10 text-danger rounded-full flex items-center justify-center mx-auto mb-6">
           <XCircle size={32} />
         </div>
         <h2 className="text-2xl font-bold mb-2">Turno no encontrado</h2>
-        <p className="text-slate-500">El link de cancelación no es válido o el turno ya fue cancelado.</p>
+        <p className="text-muted">El link de cancelación no es válido o el turno ya fue cancelado.</p>
       </div>
     );
   }
 
   if (status === 'error') {
     return (
-      <div className="max-w-md mx-auto mt-12 bg-white rounded-2xl border border-border-gray shadow-sm p-8 text-center">
-        <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-6">
+      <div className="max-w-md mx-auto mt-12 bg-surface rounded-awd border border-line shadow-sm p-8 text-center">
+        <div className="w-16 h-16 bg-danger/10 text-danger rounded-full flex items-center justify-center mx-auto mb-6">
           <XCircle size={32} />
         </div>
         <h2 className="text-2xl font-bold mb-2">Error al cancelar</h2>
-        <p className="text-slate-500">{errorMsg || 'Ocurrió un error inesperado. Intentá de nuevo.'}</p>
+        <p className="text-muted">{errorMsg || 'Ocurrió un error inesperado. Intentá de nuevo.'}</p>
       </div>
     );
   }
@@ -148,37 +148,39 @@ export const CancelAppointment: React.FC = () => {
   const canCancelNow = hoursLeft >= CANCEL_HOURS_LIMIT;
 
   return (
-    <div className="max-w-md mx-auto mt-12 bg-white rounded-2xl border border-border-gray shadow-sm p-8">
+    <div className="max-w-md mx-auto mt-12 bg-surface rounded-awd border border-line shadow-sm p-8">
       <h2 className="text-2xl font-bold mb-1">Cancelar turno</h2>
-      <p className="text-slate-500 text-sm mb-6">Revisá los datos antes de confirmar.</p>
+      <p className="text-muted text-sm mb-6">Revisá los datos antes de confirmar.</p>
 
-      <div className="bg-slate-50 rounded-xl p-4 mb-6 space-y-2">
+      <div className="bg-elevated rounded-awd p-4 mb-6 space-y-2">
         <div className="flex justify-between text-sm">
-          <span className="text-slate-500">Cliente</span>
+          <span className="text-muted">Cliente</span>
           <span className="font-medium">{appointment.name}</span>
         </div>
         <div className="flex justify-between text-sm">
-          <span className="text-slate-500">Fecha</span>
+          <span className="text-muted">Fecha</span>
           <span className="font-medium capitalize">{format(appointmentDate, "EEEE d 'de' MMMM", { locale: es })}</span>
         </div>
         <div className="flex justify-between text-sm">
-          <span className="text-slate-500">Hora</span>
+          <span className="text-muted">Hora</span>
           <span className="font-medium">{format(appointmentDate, 'HH:mm')}</span>
         </div>
       </div>
 
       {!canCancelNow && (
-        <div className="flex items-start gap-3 bg-amber-50 text-amber-700 rounded-xl p-4 mb-6 text-sm">
+        <div className="flex items-start gap-3 bg-warning/10 text-warning rounded-awd p-4 mb-6 text-sm">
           <AlertTriangle size={18} className="shrink-0 mt-0.5" />
           <p>Quedan menos de 48 horas para el turno. Ya no es posible cancelarlo desde aquí.</p>
         </div>
       )}
 
+      {/* Destructivo: contorno + icono. El relleno queda para las acciones que avanzan. */}
       <button
         onClick={handleCancel}
         disabled={!canCancelNow || cancelling}
-        className="w-full py-3 bg-red-500 text-white rounded-xl font-medium hover:bg-red-600 disabled:bg-slate-300 disabled:cursor-not-allowed transition-all"
+        className="w-full py-3 flex items-center justify-center gap-2 bg-transparent border border-danger text-danger rounded-awd font-semibold hover:bg-danger/10 disabled:border-line disabled:text-muted disabled:hover:bg-transparent disabled:cursor-not-allowed transition-colors duration-300"
       >
+        <XCircle size={17} />
         {cancelling ? 'Cancelando...' : 'Confirmar cancelación'}
       </button>
     </div>

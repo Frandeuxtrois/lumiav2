@@ -62,12 +62,12 @@ export const PhotoUpload: React.FC<Props> = ({ onComplete }) => {
   if (done) {
     return (
       <div className="text-center py-6">
-        <div className="w-16 h-16 bg-green-50 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4">
+        <div className="w-16 h-16 bg-accent/10 text-accent rounded-full flex items-center justify-center mx-auto mb-4">
           <CheckCircle2 size={32} />
         </div>
         <h3 className="text-xl font-bold mb-2">¡Foto actualizada!</h3>
-        <p className="text-slate-500 text-sm mb-6">Ya se muestra en la página de reservas.</p>
-        <button onClick={onComplete} className="px-6 py-2.5 bg-primary text-white rounded-xl text-sm font-semibold hover:bg-primary-hover transition-colors">
+        <p className="text-muted text-sm mb-6">Ya se muestra en la página de reservas.</p>
+        <button onClick={onComplete} className="px-6 py-2.5 bg-primary text-white rounded-awd text-sm font-semibold hover:bg-primary-hover transition-colors">
           Volver al panel
         </button>
       </div>
@@ -80,13 +80,13 @@ export const PhotoUpload: React.FC<Props> = ({ onComplete }) => {
     <div className="space-y-5">
       {/* Preview */}
       <div className="flex flex-col items-center gap-4">
-        <div className="w-32 h-32 rounded-full overflow-hidden bg-slate-100 flex items-center justify-center border-2 border-border-gray">
+        <div className="w-32 h-32 rounded-full overflow-hidden bg-elevated flex items-center justify-center border-2 border-line">
           {displayPhoto
             ? <img src={displayPhoto} alt="Foto de perfil" className="w-full h-full object-cover" />
-            : <UserCircle2 size={64} className="text-slate-300" />
+            : <UserCircle2 size={64} className="text-muted" />
           }
         </div>
-        <p className="text-xs text-slate-400">
+        <p className="text-xs text-muted">
           {currentPhoto && !preview ? 'Foto actual' : preview ? 'Vista previa' : 'Sin foto cargada'}
         </p>
       </div>
@@ -101,24 +101,24 @@ export const PhotoUpload: React.FC<Props> = ({ onComplete }) => {
       />
       <button
         onClick={() => inputRef.current?.click()}
-        className="w-full flex items-center justify-center gap-2 py-2.5 border-2 border-dashed border-slate-200 rounded-xl text-sm text-slate-500 hover:border-primary/40 hover:text-primary transition-colors"
+        className="w-full flex items-center justify-center gap-2 py-2.5 border-2 border-dashed border-line rounded-awd text-sm text-muted hover:border-primary/40 hover:text-primary transition-colors"
       >
         <Upload size={16} />
         {file ? file.name : 'Elegir foto'}
       </button>
 
-      <p className="text-xs text-slate-400 text-center">JPG, PNG o WebP · Máximo 5 MB</p>
+      <p className="text-xs text-muted text-center">JPG, PNG o WebP · Máximo 5 MB</p>
 
-      {error && <p className="text-sm text-red-500 bg-red-50 px-4 py-2 rounded-lg">{error}</p>}
+      {error && <p className="text-sm text-danger bg-danger/10 px-4 py-2 rounded-awd">{error}</p>}
 
       <div className="flex gap-2">
-        <button onClick={onComplete} className="px-4 py-2.5 border border-slate-200 rounded-xl text-sm hover:bg-slate-50 transition-colors">
+        <button onClick={onComplete} className="px-4 py-2.5 border border-line rounded-awd text-sm hover:bg-elevated transition-colors">
           Cancelar
         </button>
         <button
           onClick={handleUpload}
           disabled={!file || loading}
-          className="flex-1 py-2.5 bg-primary text-white rounded-xl text-sm font-semibold hover:bg-primary-hover disabled:bg-slate-300 transition-colors"
+          className="flex-1 py-2.5 bg-primary text-white rounded-awd text-sm font-semibold hover:bg-primary-hover disabled:bg-line transition-colors"
         >
           {loading ? 'Subiendo...' : 'Guardar foto'}
         </button>

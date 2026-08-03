@@ -57,16 +57,16 @@ export const Calendar: React.FC<CalendarProps> = ({ selectedDate, onDateSelect, 
           {format(currentMonth, 'MMMM yyyy', { locale: es })}
         </span>
         <div className="flex gap-2">
-          <button onClick={prevMonth} className="p-1 rounded bg-slate-100 hover:bg-slate-200 transition-colors">
+          <button onClick={prevMonth} className="p-1 rounded bg-elevated hover:bg-elevated transition-colors">
             <ChevronLeft size={16} />
           </button>
-          <button onClick={nextMonth} className="p-1 rounded bg-slate-100 hover:bg-slate-200 transition-colors">
+          <button onClick={nextMonth} className="p-1 rounded bg-elevated hover:bg-elevated transition-colors">
             <ChevronRight size={16} />
           </button>
         </div>
       </div>
 
-      <div className="grid grid-cols-7 gap-1 text-center text-xs font-semibold text-slate-400 mb-2">
+      <div className="grid grid-cols-7 gap-1 text-center text-xs font-semibold text-muted mb-2">
         {['LU', 'MA', 'MI', 'JU', 'VI', 'SA', 'DO'].map(d => <span key={d}>{d}</span>)}
       </div>
 
@@ -82,9 +82,9 @@ export const Calendar: React.FC<CalendarProps> = ({ selectedDate, onDateSelect, 
           // cargados" son lo mismo para quien reserva, y separarlos solo confundia.
           const dayClass = (() => {
             if (isSelected) return 'bg-primary text-white font-bold ring-2 ring-primary ring-offset-1';
-            if (isPast || !isCurrentMonth) return 'text-slate-200 cursor-not-allowed';
+            if (isPast || !isCurrentMonth) return 'text-muted cursor-not-allowed';
             if (status === 'available') return 'bg-primary/10 text-primary font-semibold hover:bg-primary/20';
-            return 'text-slate-300 cursor-not-allowed';
+            return 'text-muted cursor-not-allowed';
           })();
 
           return (
@@ -92,7 +92,7 @@ export const Calendar: React.FC<CalendarProps> = ({ selectedDate, onDateSelect, 
               key={day.toString()}
               onClick={() => !isPast && status === 'available' && onDateSelect(day)}
               disabled={isPast || status !== 'available'}
-              className={cn('py-2 text-sm rounded-lg transition-all relative', dayClass)}
+              className={cn('py-2 text-sm rounded-awd transition-all relative', dayClass)}
               style={idx === 0 ? { gridColumnStart: (day.getDay() === 0 ? 7 : day.getDay()) } : {}}
             >
               {format(day, 'd')}
@@ -108,11 +108,11 @@ export const Calendar: React.FC<CalendarProps> = ({ selectedDate, onDateSelect, 
       <div className="flex items-center gap-4 mt-4">
         <div className="flex items-center gap-1.5">
           <div className="w-3 h-3 rounded bg-primary/20 border border-primary/40" />
-          <span className="text-xs text-slate-500">Con turnos disponibles</span>
+          <span className="text-xs text-muted">Con turnos disponibles</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded bg-slate-100 border border-slate-200" />
-          <span className="text-xs text-slate-500">Sin disponibilidad</span>
+          <div className="w-3 h-3 rounded bg-elevated border border-line" />
+          <span className="text-xs text-muted">Sin disponibilidad</span>
         </div>
       </div>
     </div>
