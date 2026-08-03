@@ -1,16 +1,136 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Lato:wght@400;700&display=swap');
 @import "tailwindcss";
 
-@theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --color-primary: #4F7368;
-  --color-primary-hover: #3E5C53;
-  --color-bg-gray: #F4F7F6;
-  --color-border-gray: #E1E8E5;
+/* Sistema de diseño Argentina Web Design.
+   Los valores viven en custom properties y se intercambian con body.dark-mode.
+   @theme inline hace que Tailwind emita var(...) en vez de congelar el valor en
+   build time, que es lo que permite cambiar de tema en runtime sin variantes dark:. */
+
+:root {
+  --canvas:      #E2E7ED;
+  --elevated:    #D4DBE4;
+  --surface:     #ffffff;
+  --ink:         #0A3143;
+  --muted:       #276E90;
+  --accent:      #4F7368;
+  --accent-hover:#3E5C53;
+  --danger:      #B3453F;
+  --line:        rgba(10, 49, 67, 0.12);
+  --glass:       rgba(255, 255, 255, 0.70);
+  --glass-line:  rgba(10, 49, 67, 0.10);
+  --shadow-soft: 0 20px 40px rgba(10, 49, 67, 0.10);
+}
+
+body.dark-mode {
+  --canvas:      #0a0a0a;
+  --elevated:    #141414;
+  --surface:     #111111;
+  --ink:         #f5f5f5;
+  --muted:       #a0a0a0;
+  /* Verde levantado: el #4F7368 del tema claro pierde contraste sobre near-black. */
+  --accent:      #5FA88F;
+  --accent-hover:#4E9179;
+  /* Rojo reservado a acciones destructivas, nunca como color de marca. */
+  --danger:      #EE6B66;
+  --line:        rgba(255, 255, 255, 0.09);
+  --glass:       rgba(255, 255, 255, 0.04);
+  --glass-line:  rgba(255, 255, 255, 0.13);
+  --shadow-soft: 0 20px 40px rgba(0, 0, 0, 0.45);
+}
+
+@theme inline {
+  --font-sans:    "Lato", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Montserrat", ui-sans-serif, system-ui, sans-serif;
+
+  --color-canvas:       var(--canvas);
+  --color-elevated:     var(--elevated);
+  --color-surface:      var(--surface);
+  --color-ink:          var(--ink);
+  --color-muted:        var(--muted);
+  --color-accent:       var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-danger:       var(--danger);
+  --color-line:         var(--line);
+  --color-glass:        var(--glass);
+  --color-glass-line:   var(--glass-line);
+
+  /* Alias de compatibilidad: los usos que ya existian de primary / bg-gray /
+     border-gray siguen funcionando y toman los valores nuevos sin tocarse. */
+  --color-primary:       var(--accent);
+  --color-primary-hover: var(--accent-hover);
+  --color-bg-gray:       var(--canvas);
+  --color-border-gray:   var(--line);
+
+  --radius-awd: 6px;
+  --ease-awd:   cubic-bezier(0.2, 1, 0.3, 1);
 }
 
 @layer base {
   body {
-    @apply bg-bg-gray text-[#2D3748] font-sans antialiased;
+    @apply bg-canvas text-ink font-sans antialiased;
+    transition: background-color 0.3s var(--ease-awd), color 0.3s var(--ease-awd);
+  }
+
+  h1, h2, h3, h4 {
+    @apply font-display;
+  }
+
+  /* Foco siempre visible: los slots del calendario son botones y se navegan con teclado. */
+  :focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+}
+
+@layer utilities {
+  /* Labels y badges: Montserrat en mayuscula con tracking. */
+  .label {
+    @apply font-display uppercase;
+    letter-spacing: 1.5px;
+  }
+
+  .glass {
+    background: var(--glass);
+    /* El prefijo va primero: lightningcss descarta la sin prefijo si la ve antes,
+       y Firefox solo entiende la version estandar. */
+    -webkit-backdrop-filter: blur(16px);
+    backdrop-filter: blur(16px);
+    border: 1px solid var(--glass-line);
+  }
+
+  .shadow-awd {
+    box-shadow: var(--shadow-soft);
+  }
+
+  .lift {
+    transition: transform 0.28s var(--ease-awd), box-shadow 0.28s var(--ease-awd);
+  }
+
+  .lift:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-soft);
+  }
+
+  /* Aparicion al scroll: la clase reveal-in la agrega useReveal(). */
+  .reveal {
+    opacity: 0;
+    transform: translateY(16px);
+    transition: opacity 0.45s var(--ease-awd), transform 0.45s var(--ease-awd);
+  }
+
+  .reveal-in {
+    opacity: 1;
+    transform: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .reveal, .lift, body {
+      transition: none;
+    }
+    .reveal {
+      opacity: 1;
+      transform: none;
+    }
   }
 }

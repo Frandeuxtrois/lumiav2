@@ -1,13 +1,25 @@
 <!doctype html>
-<html lang="en">
+<html lang="es">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Turnos</title>
   </head>
   <body>
+    <script>
+      // Aplica el tema antes del primer paint para evitar el flash blanco.
+      // Default dark; solo el valor explicito "light" lo desactiva.
+      (function () {
+        try {
+          if (localStorage.getItem('awd-theme') !== 'light') {
+            document.body.classList.add('dark-mode');
+          }
+        } catch (e) {
+          document.body.classList.add('dark-mode');
+        }
+      })();
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
-
