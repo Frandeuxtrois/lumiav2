@@ -2,7 +2,7 @@ import React from 'react';
 import { appointmentService, emailService } from '../services/api';
 import { Appointment, AppointmentStatus } from '../types';
 import { formatTime, formatDate, cn } from '../lib/utils';
-import { Plus, Calendar as CalendarIcon, CheckCircle, Trash2, Mail, Lock, Image, BookOpen, MessageSquare } from 'lucide-react';
+import { Plus, Calendar as CalendarIcon, CheckCircle, Trash2, Mail, Lock, Image, BookOpen, MessageSquare, Ban } from 'lucide-react';
 import { format } from 'date-fns';
 import { GmailSetup } from './GmailSetup';
 import { ChangePassword } from './ChangePassword';
@@ -40,6 +40,30 @@ export const AdminDashboard: React.FC = () => {
   React.useEffect(() => {
     loadAppointments();
   }, [loadAppointments]);
+
+  const [blocking, setBlocking] = React.useState(false);
+  const dayIsBlocked = appointments.some(a => a.date === filterDate && a.status === 'blocked');
+
+  const handleToggleBlock = async () => {
+    setBlocking(true);
+    setErrorMsg(null);
+    try {
+      const afectados = dayIsBlocked
+        ? await appointmentService.unblockDay(filterDate)
+        : await appointmentService.blockDay(filterDate);
+
+      if (afectados === 0) {
+        setErrorMsg(dayIsBlocked
+          ? 'No había horarios bloqueados en este día.'
+          : 'No hay horarios libres para bloquear en este día.');
+      }
+      loadAppointments();
+    } catch (err) {
+      setErrorMsg(err instanceof Error ? err.message : 'No se pudo cambiar el bloqueo del día.');
+    } finally {
+      setBlocking(false);
+    }
+  };
 
   const handleStatusChange = async (id: string, status: AppointmentStatus) => {
     try {
@@ -123,12 +147,22 @@ export const AdminDashboard: React.FC = () => {
             ))}
           </div>
           {view === 'day' && (
-            <input
-              type="date"
-              value={filterDate}
-              onChange={(e) => setFilterDate(e.target.value)}
-              className="px-3 py-2 border border-line rounded-awd text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
-            />
+            <>
+              <input
+                type="date"
+                value={filterDate}
+                onChange={(e) => setFilterDate(e.target.value)}
+                className="px-3 py-2 border border-line rounded-awd text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+              />
+              <button
+                onClick={handleToggleBlock}
+                disabled={blocking}
+                className="px-4 py-2 border border-line rounded-awd text-xs font-bold uppercase tracking-widest text-muted hover:text-ink hover:border-muted flex items-center gap-2 transition-colors disabled:opacity-50"
+                title={dayIsBlocked ? 'Devolver los horarios a disponibles' : 'Sacar de circulación los horarios libres de este día'}
+              >
+                <Ban size={14} /> {dayIsBlocked ? 'Desbloquear día' : 'Bloquear día'}
+              </button>
+            </>
           )}
           <button
             onClick={() => setShowAddModal(true)}

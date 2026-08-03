@@ -1,4 +1,4 @@
-import { CircleDot, User, CheckCheck, XCircle, LucideIcon } from 'lucide-react';
+import { CircleDot, User, CheckCheck, XCircle, Ban, LucideIcon } from 'lucide-react';
 import { AppointmentStatus } from '../types';
 
 // Cada estado se distingue por icono + palabra + forma del borde, no solo por color:
@@ -23,5 +23,10 @@ export const STATUS_META: Record<AppointmentStatus, { label: string; Icon: Lucid
     label: 'Cancelado',
     Icon: XCircle,
     chip: 'bg-danger/10 text-danger border-danger/40 border-dashed',
+  },
+  blocked: {
+    label: 'Bloqueado',
+    Icon: Ban,
+    chip: 'bg-elevated text-muted border-muted/40 border-dashed',
   },
 };

@@ -128,6 +128,32 @@ export const appointmentService = {
     if (!data || data.length !== 1) throw new StaleWriteError('El turno ya no figura como reservado.');
   },
 
+  // Bloquear no borra los slots: los saca de circulacion y se pueden devolver.
+  // Solo toca los libres — un turno ya reservado se cancela a mano y avisa al cliente.
+  async blockDay(date: string) {
+    const { data, error } = await supabase
+      .from('appointments')
+      .update({ status: 'blocked' })
+      .eq('date', date)
+      .eq('status', 'available')
+      .select('id');
+
+    if (error) throw error;
+    return data?.length ?? 0;
+  },
+
+  async unblockDay(date: string) {
+    const { data, error } = await supabase
+      .from('appointments')
+      .update({ status: 'available' })
+      .eq('date', date)
+      .eq('status', 'blocked')
+      .select('id');
+
+    if (error) throw error;
+    return data?.length ?? 0;
+  },
+
   async createSlot(slot: Partial<Appointment>) {
     const { data, error } = await supabase
       .from('appointments')
