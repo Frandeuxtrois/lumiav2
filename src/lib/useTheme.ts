@@ -4,13 +4,15 @@ export type Theme = 'dark' | 'light';
 
 const STORAGE_KEY = 'awd-theme';
 
-// Default dark. El script inline de index.html ya aplico la clase antes del
-// primer paint; esto solo mantiene React en sincronia con lo que ya esta puesto.
+// Default light mientras dure la migracion de colores hardcodeados; el sistema
+// AWD es dark-first y vuelve a serlo cuando terminen las fases 2 y 3.
+// El script inline de index.html ya aplico la clase antes del primer paint:
+// esto solo mantiene React en sincronia con lo que ya esta puesto.
 const readStoredTheme = (): Theme => {
   try {
-    return localStorage.getItem(STORAGE_KEY) === 'light' ? 'light' : 'dark';
+    return localStorage.getItem(STORAGE_KEY) === 'dark' ? 'dark' : 'light';
   } catch {
-    return 'dark';
+    return 'light';
   }
 };
 

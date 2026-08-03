@@ -7,16 +7,16 @@
   </head>
   <body>
     <script>
-      // Aplica el tema antes del primer paint para evitar el flash blanco.
-      // Default dark; solo el valor explicito "light" lo desactiva.
+      // Aplica el tema antes del primer paint para evitar flash.
+      // Default light MIENTRAS dure la migracion de colores hardcodeados:
+      // en dark todavia quedan cards blancas sobre fondo negro. Cuando las
+      // fases 2 y 3 terminen, esto vuelve a default dark.
       (function () {
         try {
-          if (localStorage.getItem('awd-theme') !== 'light') {
+          if (localStorage.getItem('awd-theme') === 'dark') {
             document.body.classList.add('dark-mode');
           }
-        } catch (e) {
-          document.body.classList.add('dark-mode');
-        }
+        } catch (e) {}
       })();
     </script>
     <div id="root"></div>
