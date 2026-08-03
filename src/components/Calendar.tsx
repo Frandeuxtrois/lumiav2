@@ -78,19 +78,20 @@ export const Calendar: React.FC<CalendarProps> = ({ selectedDate, onDateSelect, 
           const isToday = isSameDay(day, today);
           const status = dateStatus[format(day, 'yyyy-MM-dd')];
 
+          // Dos estados visibles: hay lugar o no lo hay. "Completo" y "sin turnos
+          // cargados" son lo mismo para quien reserva, y separarlos solo confundia.
           const dayClass = (() => {
             if (isSelected) return 'bg-primary text-white font-bold ring-2 ring-primary ring-offset-1';
             if (isPast || !isCurrentMonth) return 'text-slate-200 cursor-not-allowed';
-            if (status === 'available') return 'bg-green-200 text-green-800 font-semibold hover:bg-green-300';
-            if (status === 'full') return 'bg-red-200 text-red-700 font-semibold cursor-not-allowed';
-            return 'hover:bg-slate-100';
+            if (status === 'available') return 'bg-primary/10 text-primary font-semibold hover:bg-primary/20';
+            return 'text-slate-300 cursor-not-allowed';
           })();
 
           return (
             <button
               key={day.toString()}
-              onClick={() => !isPast && status !== 'full' && onDateSelect(day)}
-              disabled={isPast || status === 'full'}
+              onClick={() => !isPast && status === 'available' && onDateSelect(day)}
+              disabled={isPast || status !== 'available'}
               className={cn('py-2 text-sm rounded-lg transition-all relative', dayClass)}
               style={idx === 0 ? { gridColumnStart: (day.getDay() === 0 ? 7 : day.getDay()) } : {}}
             >
@@ -106,12 +107,12 @@ export const Calendar: React.FC<CalendarProps> = ({ selectedDate, onDateSelect, 
       {/* Leyenda */}
       <div className="flex items-center gap-4 mt-4">
         <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded bg-green-200" />
-          <span className="text-[10px] text-slate-400">Disponible</span>
+          <div className="w-3 h-3 rounded bg-primary/20 border border-primary/40" />
+          <span className="text-xs text-slate-500">Con turnos disponibles</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <div className="w-3 h-3 rounded bg-red-200" />
-          <span className="text-[10px] text-slate-400">Completo</span>
+          <div className="w-3 h-3 rounded bg-slate-100 border border-slate-200" />
+          <span className="text-xs text-slate-500">Sin disponibilidad</span>
         </div>
       </div>
     </div>

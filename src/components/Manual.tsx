@@ -58,7 +58,7 @@ export const Manual: React.FC<Props> = ({ onClose }) => (
         <Section icon={<Users size={16} />} title="¿Qué ve y vive tu cliente?">
           <p className="text-slate-500 mb-2">Cuando un cliente entra a tu página de turnos, esto es lo que pasa paso a paso:</p>
           <div className="bg-slate-50 rounded-xl p-4 space-y-2">
-            <p>📅 Ve un <strong>calendario</strong> donde los días en <strong>verde</strong> tienen turnos disponibles y los que están en <strong>rojo</strong> están completos.</p>
+            <p>📅 Ve un <strong>calendario</strong> donde los días <strong>resaltados</strong> tienen turnos disponibles. Los días sin lugar aparecen apagados y no se pueden seleccionar.</p>
             <p>🕐 Elige el <strong>día y horario</strong> que le queda cómodo. Los turnos ya tomados aparecen tachados y no se pueden seleccionar.</p>
             <p>📝 Completa sus datos: nombre, email, teléfono y una nota opcional.</p>
             <p>✅ Confirma la reserva y ve una pantalla que le muestra el resumen del turno.</p>
