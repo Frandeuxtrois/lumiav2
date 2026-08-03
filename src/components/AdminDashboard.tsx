@@ -2,7 +2,7 @@ import React from 'react';
 import { appointmentService, emailService } from '../services/api';
 import { Appointment, AppointmentStatus } from '../types';
 import { formatTime, formatDate, cn } from '../lib/utils';
-import { Plus, Calendar as CalendarIcon, CheckCircle, Trash2, Mail, Lock, Image, BookOpen } from 'lucide-react';
+import { Plus, Calendar as CalendarIcon, CheckCircle, Trash2, Mail, Lock, Image, BookOpen, MessageSquare } from 'lucide-react';
 import { format } from 'date-fns';
 import { GmailSetup } from './GmailSetup';
 import { ChangePassword } from './ChangePassword';
@@ -179,6 +179,12 @@ export const AdminDashboard: React.FC = () => {
                         <div>
                           <div className="font-medium text-ink">{apt.name}</div>
                           <div className="text-[10px] text-muted">{apt.email} • {apt.phone || 'Sin tel'}</div>
+                          {apt.notes && (
+                            <div className="mt-1.5 flex items-start gap-1.5 text-[11px] text-ink bg-warning/10 border-l-2 border-warning rounded-r-awd px-2 py-1 max-w-xs">
+                              <MessageSquare size={11} className="text-warning shrink-0 mt-0.5" />
+                              <span>{apt.notes}</span>
+                            </div>
+                          )}
                         </div>
                       )}
                     </td>

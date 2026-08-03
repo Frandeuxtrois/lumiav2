@@ -45,7 +45,7 @@ serve(async (req) => {
   }
 
   try {
-    const { to, name, date, time, appointmentId } = await req.json();
+    const { to, name, date, time, appointmentId, phone, notes } = await req.json();
 
     if (!to || !name || !date || !time || !appointmentId) {
       return new Response(JSON.stringify({ error: 'Faltan campos requeridos' }), {
@@ -126,9 +126,15 @@ serve(async (req) => {
         <div style="background: #f9f9f9; border-radius: 8px; padding: 16px; margin: 24px 0;">
           <p style="margin: 0;"><strong>Cliente:</strong> ${name}</p>
           <p style="margin: 8px 0 0;"><strong>Email:</strong> ${to}</p>
+          <p style="margin: 8px 0 0;"><strong>Telefono:</strong> ${phone || 'No dejo'}</p>
           <p style="margin: 8px 0 0;"><strong>Fecha:</strong> ${date}</p>
           <p style="margin: 8px 0 0;"><strong>Hora:</strong> ${time}</p>
         </div>
+        ${notes ? `
+        <div style="background: #fff8e5; border-left: 3px solid #d9a441; border-radius: 4px; padding: 12px 16px; margin: 0 0 24px;">
+          <p style="margin: 0 0 4px; font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: #8a6d1f;">Comentario del cliente</p>
+          <p style="margin: 0; color: #1a1a1a;">${notes}</p>
+        </div>` : ''}
         <a href="${gcalUrl}" style="display: inline-block; background: #4285f4; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: 600; margin-bottom: 12px;">
           📅 Agregar a Google Calendar
         </a>

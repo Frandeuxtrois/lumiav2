@@ -45,7 +45,7 @@ const invokeEmail = async (fn: string, body: Record<string, unknown>): Promise<E
 };
 
 export const emailService = {
-  sendConfirmation(params: { to: string; name: string; date: string; time: string; appointmentId: string }): Promise<EmailResult> {
+  sendConfirmation(params: { to: string; name: string; date: string; time: string; appointmentId: string; phone?: string; notes?: string }): Promise<EmailResult> {
     return invokeEmail('send-confirmation', params);
   },
 

@@ -55,6 +55,8 @@ const ClientBooking: React.FC = () => {
         date: slot.date,
         time: slot.time,
         appointmentId: selectedSlotId,
+        phone: data.phone,
+        notes: data.notes,
       });
       setEmailWarning(email.ok ? null : (email.message ?? 'No pudimos enviar el email de confirmación.'));
       setBookedSlot({ date: slot.date, time: slot.time, name: data.name });
