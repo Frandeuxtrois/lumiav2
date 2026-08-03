@@ -11,11 +11,11 @@ interface LayoutProps {
 const useClock = () => {
   const [now, setNow] = React.useState(new Date());
   React.useEffect(() => {
-    const id = setInterval(() => setNow(new Date()), 1000);
+    const id = setInterval(() => setNow(new Date()), 30000);
     return () => clearInterval(id);
   }, []);
   const dia = now.toLocaleDateString('es-AR', { weekday: 'short', day: 'numeric', month: 'short' });
-  const hora = now.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  const hora = now.toLocaleTimeString('es-AR', { hour: '2-digit', minute: '2-digit' });
   return `${dia} · ${hora}`;
 };
 
@@ -39,10 +39,6 @@ export const Layout: React.FC<LayoutProps> = ({ children, user }) => {
         </Link>
         <div className="flex items-center gap-4 md:gap-6">
           <span className="text-xs font-mono text-slate-400 hidden md:inline">{clock}</span>
-          <div className="flex items-center gap-2">
-            <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
-            <span className="text-[10px] md:text-xs font-semibold uppercase tracking-widest text-slate-400">Supabase Live</span>
-          </div>
           {user ? (
             <div className="flex items-center gap-4">
               <Link to="/admin" className="text-sm font-medium text-slate-600 hover:text-primary">Panel Admin</Link>
