@@ -150,7 +150,7 @@ export const CreateSlotsModal: React.FC<Props> = ({ onClose, onSuccess }) => {
         <h3 className="text-xl font-bold mb-1">
           {createdCount === 1 ? '1 horario creado' : `${createdCount} horarios creados`}
         </h3>
-        <p className="text-slate-500 text-sm mb-6">Ya aparecen disponibles para los pacientes.</p>
+        <p className="text-slate-500 text-sm mb-6">Ya aparecen disponibles para los clientes.</p>
         <button
           onClick={onSuccess}
           className="px-6 py-2.5 bg-primary text-white rounded-xl text-sm font-semibold hover:bg-primary-hover transition-colors"
@@ -228,7 +228,7 @@ export const CreateSlotsModal: React.FC<Props> = ({ onClose, onSuccess }) => {
             </div>
           </div>
           <div>
-            <label className={labelClass}>Duración de cada sesión</label>
+            <label className={labelClass}>Duración de cada turno</label>
             <div className="flex gap-2">
               {DURATIONS.map(d => (
                 <button
@@ -310,7 +310,7 @@ export const CreateSlotsModal: React.FC<Props> = ({ onClose, onSuccess }) => {
             </div>
           </div>
           <div>
-            <label className={labelClass}>Duración de cada sesión</label>
+            <label className={labelClass}>Duración de cada turno</label>
             <div className="flex gap-2">
               {DURATIONS.map(d => (
                 <button

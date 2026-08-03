@@ -1,6 +1,6 @@
 # Lumina — Turnero
 
-SPA de reservas online para profesionales independientes. El paciente elige fecha y horario, deja sus datos y recibe confirmación por email con archivo de calendario adjunto. La profesional gestiona todo desde un panel privado.
+SPA de reservas online para profesionales y comercios independientes. El cliente elige fecha y horario, deja sus datos y recibe confirmación por email con archivo de calendario adjunto. Quien atiende gestiona todo desde un panel privado.
 
 El sistema envía tres tipos de email de forma automática: confirmación al reservar, cancelación (en ambas direcciones) y recordatorios a 24 y 2 horas del turno.
 
@@ -15,7 +15,7 @@ El sistema envía tres tipos de email de forma automática: confirmación al res
 5. [Variables y secrets](#variables-y-secrets)
 6. [Edge Functions](#edge-functions)
 7. [Cron de recordatorios](#cron-de-recordatorios)
-8. [Flujo del paciente](#flujo-del-paciente)
+8. [Flujo del cliente](#flujo-del-cliente)
 9. [Flujo del administrador](#flujo-del-administrador)
 10. [Levantar una instancia nueva](#levantar-una-instancia-nueva)
 11. [Personalizar por cliente](#personalizar-por-cliente)
@@ -45,7 +45,7 @@ El estado del servidor se maneja con llamadas directas al SDK de Supabase y `use
 ```
 /
 ├── src/
-│   ├── App.tsx                   # Routing, sesión y flujo de reserva del paciente
+│   ├── App.tsx                   # Routing, sesion y flujo de reserva del cliente
 │   ├── main.tsx                  # Entry point
 │   ├── types.ts                  # Appointment, AppointmentStatus
 │   ├── index.css                 # Variables de tema (colores, fuente)
@@ -59,7 +59,7 @@ El estado del servidor se maneja con llamadas directas al SDK de Supabase y `use
 │       ├── Auth.tsx              # Login
 │       ├── Calendar.tsx          # Calendario mensual
 │       ├── SlotSelector.tsx      # Grid de horarios
-│       ├── BookingForm.tsx       # Datos del paciente
+│       ├── BookingForm.tsx       # Datos del cliente
 │       ├── CancelAppointment.tsx # Cancelación por link (/cancelar?id=)
 │       ├── ProfileCard.tsx       # Tarjeta de presentación
 │       ├── AdminDashboard.tsx    # Panel: vista día y semana
@@ -90,7 +90,7 @@ El estado del servidor se maneja con llamadas directas al SDK de Supabase y `use
 
 **`SlotSelector.tsx`** — Horarios de la fecha elegida. Los ocupados se muestran deshabilitados.
 
-**`CancelAppointment.tsx`** — Página del link de cancelación. Valida el límite de horas (`CANCEL_HOURS_LIMIT`, default 48). Al cancelar devuelve el slot a `available` y borra los datos del paciente.
+**`CancelAppointment.tsx`** — Página del link de cancelación. Valida el límite de horas (`CANCEL_HOURS_LIMIT`, default 48). Al cancelar devuelve el slot a `available` y borra los datos del cliente.
 
 **`AdminDashboard.tsx`** — Vista día (lista filtrable) y vista semana. Marcar completado, eliminar, y accesos a los modales de configuración.
 
@@ -109,7 +109,7 @@ El estado del servidor se maneja con llamadas directas al SDK de Supabase y `use
 
 ### `appointments`
 
-Cada fila es un slot horario. Los datos del paciente viven en la misma fila y quedan en `null` cuando el slot está libre.
+Cada fila es un slot horario. Los datos del cliente viven en la misma fila y quedan en `null` cuando el slot está libre.
 
 | Campo | Tipo | Notas |
 |---|---|---|
@@ -117,7 +117,7 @@ Cada fila es un slot horario. Los datos del paciente viven en la misma fila y qu
 | `date` | DATE | `YYYY-MM-DD` |
 | `time` | TIME | `HH:MM` |
 | `status` | TEXT | `available` / `booked` / `completed` / `cancelled` |
-| `name`, `email`, `phone`, `notes` | TEXT | Datos del paciente, null si libre |
+| `name`, `email`, `phone`, `notes` | TEXT | Datos del cliente, null si libre |
 | `reminder_24h_sent` | BOOLEAN | Evita reenviar el recordatorio de 24h |
 | `reminder_2h_sent` | BOOLEAN | Ídem para el de 2h |
 | `created_at` | TIMESTAMPTZ | Auto |
@@ -126,7 +126,7 @@ Cada fila es un slot horario. Los datos del paciente viven en la misma fila y qu
 
 ### `settings`
 
-Configuración key/value que escribe la profesional desde el panel.
+Configuración key/value que se edita desde el panel.
 
 | key | Contenido |
 |---|---|
@@ -136,7 +136,7 @@ Configuración key/value que escribe la profesional desde el panel.
 
 ### RLS
 
-El calendario público necesita ver los turnos ocupados para marcar los días llenos, por eso anon lee tanto `available` como `booked` — pero nunca los datos personales de otro paciente más allá de lo que expone la fila.
+El calendario público necesita ver los turnos ocupados para marcar los días llenos, por eso anon lee tanto `available` como `booked` — pero nunca los datos personales de otro cliente más allá de lo que expone la fila.
 
 | Tabla | Policy | Rol | Operación |
 |---|---|---|---|
@@ -175,7 +175,7 @@ Son las únicas dos que lee el código. Se obtienen en Supabase → Settings →
 | Secret | Usado por | Obligatorio |
 |---|---|---|
 | `APP_URL` | send-confirmation, send-reminders | Sí en producción. Sin esto los links de cancelación apuntan a `http://localhost:3000` y las funciones lo loguean como error |
-| `THERAPIST_EMAIL` | send-confirmation, send-cancellation | No. Si falta usa el `gmail_user` de `settings` |
+| `OWNER_EMAIL` | send-confirmation, send-cancellation | No. Si falta usa el `gmail_user` de `settings` |
 
 `SUPABASE_URL` y `SUPABASE_SERVICE_ROLE_KEY` los inyecta Supabase automáticamente.
 
@@ -189,11 +189,11 @@ Las tres leen las credenciales de Gmail desde `settings` usando la service_role 
 
 | Función | Se dispara | Envía |
 |---|---|---|
-| `send-confirmation` | Al confirmar una reserva | Email al paciente (link de cancelar + botón de Google Calendar + `.ics`) y aviso a la profesional |
+| `send-confirmation` | Al confirmar una reserva | Email al cliente (link de cancelar + botón de Google Calendar + `.ics`) y aviso al titular |
 | `send-cancellation` | Al cancelar, desde el link o desde el panel | Notifica a la contraparte con un `.ics` `METHOD:CANCEL` que borra el evento del calendario |
 | `send-reminders` | Cron cada 30 min | Recordatorio a los turnos que caen en la ventana de 24h o 2h, y marca el flag para no repetir |
 
-Los `.ics` usan `UID:<appointmentId>@lumina`. El UID debe coincidir entre confirmación y cancelación, si no el evento no se borra del calendario del paciente.
+Los `.ics` usan `UID:<appointmentId>@lumina`. El UID debe coincidir entre confirmación y cancelación, si no el evento no se borra del calendario del cliente.
 
 Para actualizar una función: Supabase → Edge Functions → seleccionar → pegar el contenido del archivo → Deploy.
 
@@ -219,7 +219,7 @@ Las fechas se interpretan en `America/Argentina/Buenos_Aires` (UTC-3, hardcodead
 
 ---
 
-## Flujo del paciente
+## Flujo del cliente
 
 ```
 / (home)
@@ -227,8 +227,8 @@ Las fechas se interpretan en `America/Argentina/Buenos_Aires` (UTC-3, hardcodead
 ├── Elige fecha → horario → completa sus datos
 └── Confirma
     ├── Slot pasa a "booked"
-    ├── Email al paciente con .ics y link de cancelación
-    └── Aviso a la profesional
+    ├── Email al cliente con .ics y link de cancelación
+    └── Aviso al titular
         └── Si el email falla, la reserva igual queda hecha y se avisa en pantalla
 
 /cancelar?id=xxx
@@ -243,7 +243,7 @@ Las fechas se interpretan en `America/Argentina/Buenos_Aires` (UTC-3, hardcodead
 
 /admin
 ├── Vista día (lista filtrable) o vista semana
-├── Marcar completado / eliminar (si estaba reservado, notifica al paciente)
+├── Marcar completado / eliminar (si estaba reservado, notifica al cliente)
 ├── "Nuevo Horario"      → individual / rango / período
 ├── "Foto de Perfil"     → sube a Storage
 ├── "Configurar Email"   → wizard de Gmail
@@ -260,10 +260,10 @@ Las fechas se interpretan en `America/Argentina/Buenos_Aires` (UTC-3, hardcodead
 1. Crear proyecto nuevo (región `sa-east-1` para Argentina).
 2. SQL Editor → correr `001_appointments_and_settings.sql`.
 3. SQL Editor → correr `002_profile_storage_bucket.sql`.
-4. Authentication → Users → Add user: crear la cuenta de la profesional con su contraseña.
+4. Authentication → Users → Add user: crear la cuenta del titular con su contraseña.
 5. **Authentication → Providers → Email → desactivar "Enable email signup".** Sin esto cualquiera puede registrarse y entrar al panel, porque el panel solo verifica que haya sesión iniciada.
 6. Edge Functions → deployar `send-confirmation`, `send-cancellation` y `send-reminders` con `verify_jwt` activado.
-7. Edge Functions → Secrets → cargar `APP_URL` (y `THERAPIST_EMAIL` si aplica).
+7. Edge Functions → Secrets → cargar `APP_URL` (y `OWNER_EMAIL` si aplica).
 8. SQL Editor → correr `003_cron_send_reminders.sql` reemplazando la key y el project ref. No commitear el archivo editado.
 
 ### 2. Vercel
@@ -273,7 +273,7 @@ Las fechas se interpretan en `America/Argentina/Buenos_Aires` (UTC-3, hardcodead
 3. Deploy. El `vercel.json` ya trae los rewrites para que `/cancelar` y `/admin` no den 404 al refrescar.
 4. Volver a Supabase y cargar el `APP_URL` definitivo con el dominio de Vercel.
 
-### 3. La profesional, desde el panel
+### 3. El titular, desde el panel
 
 - Subir su foto
 - Completar el wizard "Configurar Email" (sin esto no sale ningún mail)

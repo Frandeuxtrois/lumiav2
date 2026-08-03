@@ -24,7 +24,7 @@ function buildCancelIcs(date: string, time: string, appointmentId: string, gmail
     `UID:${appointmentId}@lumina`,
     `DTSTART;TZID=America/Argentina/Buenos_Aires:${dtStart}`,
     `DTEND;TZID=America/Argentina/Buenos_Aires:${dtEnd}`,
-    'SUMMARY:Consulta psicológica — Lumina',
+    'SUMMARY:Turno — Lumina',
     'STATUS:CANCELLED',
     'SEQUENCE:1',
     `ORGANIZER;CN=Lumina:mailto:${gmailUser}`,
@@ -58,7 +58,7 @@ serve(async (req) => {
     const settings = Object.fromEntries(settingsRows.map(r => [r.key, r.value]));
     const GMAIL_USER = settings['gmail_user'];
     const GMAIL_PASS = settings['gmail_app_password'];
-    const THERAPIST_EMAIL = Deno.env.get('THERAPIST_EMAIL') ?? GMAIL_USER;
+    const OWNER_EMAIL = Deno.env.get('OWNER_EMAIL') ?? GMAIL_USER;
 
     const cancelIcs = buildCancelIcs(date, time, appointmentId, GMAIL_USER);
     const icsAttachment = {
@@ -73,18 +73,18 @@ serve(async (req) => {
       auth: { user: GMAIL_USER, pass: GMAIL_PASS },
     });
 
-    if (cancelledBy === 'patient') {
-      // Paciente canceló → notificar a la terapeuta con .ics CANCEL
+    if (cancelledBy === 'client') {
+      // Cliente cancelo -> notificar al profesional con .ics CANCEL
       await transporter.sendMail({
         from: `"Lumina" <${GMAIL_USER}>`,
-        to: THERAPIST_EMAIL,
-        subject: `Turno cancelado por el paciente: ${name} — ${date} ${time}`,
+        to: OWNER_EMAIL,
+        subject: `Turno cancelado por el cliente: ${name} — ${date} ${time}`,
         html: `
           <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
             <h2 style="color: #1a1a1a;">Turno cancelado</h2>
-            <p>El paciente canceló su turno.</p>
+            <p>El cliente cancelo su turno.</p>
             <div style="background: #f9f9f9; border-radius: 8px; padding: 16px; margin: 24px 0;">
-              <p style="margin: 0;"><strong>Paciente:</strong> ${name}</p>
+              <p style="margin: 0;"><strong>Cliente:</strong> ${name}</p>
               <p style="margin: 8px 0 0;"><strong>Email:</strong> ${email}</p>
               <p style="margin: 8px 0 0;"><strong>Fecha:</strong> ${date}</p>
               <p style="margin: 8px 0 0;"><strong>Hora:</strong> ${time}</p>
@@ -95,7 +95,7 @@ serve(async (req) => {
         attachments: [icsAttachment],
       });
     } else {
-      // Psicóloga canceló → notificar al paciente con .ics CANCEL + aviso a la terapeuta
+      // El profesional cancelo -> notificar al cliente con .ics CANCEL + aviso propio
       await Promise.all([
         transporter.sendMail({
           from: `"Lumina" <${GMAIL_USER}>`,
@@ -117,12 +117,12 @@ serve(async (req) => {
         }),
         transporter.sendMail({
           from: `"Lumina" <${GMAIL_USER}>`,
-          to: THERAPIST_EMAIL,
+          to: OWNER_EMAIL,
           subject: `Turno cancelado: ${name} — ${date} ${time}`,
           html: `
             <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
               <h2 style="color: #1a1a1a;">Turno cancelado</h2>
-              <p>Cancelaste el turno de <strong>${name}</strong>. Se le notificó al paciente.</p>
+              <p>Cancelaste el turno de <strong>${name}</strong>. Se le notifico al cliente.</p>
               <div style="background: #f9f9f9; border-radius: 8px; padding: 16px; margin: 24px 0;">
                 <p style="margin: 0;"><strong>Fecha:</strong> ${date}</p>
                 <p style="margin: 8px 0 0;"><strong>Hora:</strong> ${time}</p>

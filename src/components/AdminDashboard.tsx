@@ -45,8 +45,9 @@ export const AdminDashboard: React.FC = () => {
     try {
       await appointmentService.updateAppointmentStatus(id, status);
       loadAppointments();
-    } catch {
-      setErrorMsg('No se pudo actualizar el estado. Intentá de nuevo.');
+    } catch (err) {
+      setErrorMsg(err instanceof Error ? err.message : 'No se pudo actualizar el estado. Intentá de nuevo.');
+      loadAppointments();
     }
   };
 
@@ -72,15 +73,16 @@ export const AdminDashboard: React.FC = () => {
           date: confirmDelete.date!,
           time: confirmDelete.time!,
           appointmentId: confirmDelete.id,
-          cancelledBy: 'therapist',
+          cancelledBy: 'owner',
         });
         if (!mail.ok) {
           setErrorMsg(`El turno se eliminó, pero no se pudo avisar a ${confirmDelete.name} por email: ${mail.message}`);
         }
       }
       loadAppointments();
-    } catch {
-      setErrorMsg('No se pudo eliminar el horario. Intentá de nuevo.');
+    } catch (err) {
+      setErrorMsg(err instanceof Error ? err.message : 'No se pudo eliminar el horario. Intentá de nuevo.');
+      loadAppointments();
     } finally {
       setConfirmDelete(null);
     }
@@ -147,13 +149,13 @@ export const AdminDashboard: React.FC = () => {
       ) : (
       <div className="col-span-12 lg:col-span-8 bg-white rounded-2xl shadow-sm border border-border-gray overflow-hidden">
         <div className="px-6 py-4 border-b border-border-gray bg-slate-50">
-          <h3 className="font-semibold text-sm">Consultas para {formatDate(filterDate)}</h3>
+          <h3 className="font-semibold text-sm">Turnos para {formatDate(filterDate)}</h3>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left">
             <thead>
               <tr className="bg-slate-50/50 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                <th className="px-6 py-3">Paciente</th>
+                <th className="px-6 py-3">Cliente</th>
                 <th className="px-6 py-3">Hora</th>
                 <th className="px-6 py-3">Estado</th>
                 <th className="px-6 py-3 text-right">Acciones</th>
@@ -287,15 +289,15 @@ export const AdminDashboard: React.FC = () => {
             </div>
             <div className="flex items-center gap-3 text-sm">
               <div className="w-2 h-2 rounded-full bg-blue-500"></div>
-              <span className="text-slate-600">Reservado: turno tomado por un paciente.</span>
+              <span className="text-slate-600">Reservado: turno tomado por un cliente.</span>
             </div>
             <div className="flex items-center gap-3 text-sm">
               <div className="w-2 h-2 rounded-full bg-slate-400"></div>
-              <span className="text-slate-600">Completado: sesión finalizada.</span>
+              <span className="text-slate-600">Completado: turno finalizado.</span>
             </div>
             <div className="flex items-center gap-3 text-sm">
               <div className="w-2 h-2 rounded-full bg-red-400"></div>
-              <span className="text-slate-600">Cancelado: turno cancelado por el paciente.</span>
+              <span className="text-slate-600">Cancelado: turno cancelado por el cliente.</span>
             </div>
           </div>
         </div>
@@ -320,7 +322,7 @@ export const AdminDashboard: React.FC = () => {
             ? '¿Querés eliminar este turno de todas formas?'
             : '¿Seguro querés eliminar este horario?'}
           warning={confirmDelete.status === 'booked'
-            ? 'Se le enviará un email de cancelación al paciente automáticamente.'
+            ? 'Se le enviará un email de cancelación al cliente automáticamente.'
             : undefined}
           confirmLabel="Eliminar"
           onConfirm={executeDelete}

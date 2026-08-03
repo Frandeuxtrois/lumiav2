@@ -20,8 +20,8 @@ export const ProfileCard: React.FC = () => {
       </div>
       <div>
         <h2 className="text-lg font-bold text-slate-900 leading-tight">Lumina</h2>
-        <p className="text-sm text-primary font-medium">Psicóloga</p>
-        <p className="text-xs text-slate-400 mt-0.5">Reservá tu consulta online</p>
+        <p className="text-sm text-primary font-medium">Turnos online</p>
+        <p className="text-xs text-slate-400 mt-0.5">Elegí el día y horario que te quede mejor</p>
       </div>
     </div>
   );

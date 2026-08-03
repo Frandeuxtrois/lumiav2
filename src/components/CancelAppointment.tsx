@@ -5,7 +5,7 @@ import { format, parseISO, differenceInHours } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Appointment } from '../types';
 import { CheckCircle2, XCircle, AlertTriangle, Loader2 } from 'lucide-react';
-import { emailService } from '../services/api';
+import { appointmentService, emailService, StaleWriteError } from '../services/api';
 
 const CANCEL_HOURS_LIMIT = 48;
 
@@ -52,28 +52,29 @@ export const CancelAppointment: React.FC = () => {
     if (!canCancel()) { setStatus('too-late'); return; }
 
     setCancelling(true);
-    const { error } = await supabase
-      .from('appointments')
-      .update({ status: 'available', name: null, email: null, phone: null, notes: null })
-      .eq('id', appointment.id)
-      .eq('status', 'booked');
+    try {
+      await appointmentService.cancelBookedSlot(appointment.id);
 
-    if (error) {
-      setErrorMsg(error.message);
-      setStatus('error');
-    } else {
       const mail = await emailService.sendCancellation({
         name: appointment.name!,
         email: appointment.email!,
         date: appointment.date,
         time: appointment.time,
         appointmentId: appointment.id,
-        cancelledBy: 'patient',
+        cancelledBy: 'client',
       });
       if (!mail.ok) setEmailWarning(mail.message ?? 'No se pudo notificar por email.');
       setStatus('success');
+    } catch (err) {
+      setErrorMsg(
+        err instanceof StaleWriteError
+          ? 'Este turno ya no figura como reservado. Puede que ya lo hayas cancelado.'
+          : err instanceof Error ? err.message : 'Ocurrió un error inesperado.'
+      );
+      setStatus('error');
+    } finally {
+      setCancelling(false);
     }
-    setCancelling(false);
   };
 
   if (loading) {
@@ -153,7 +154,7 @@ export const CancelAppointment: React.FC = () => {
 
       <div className="bg-slate-50 rounded-xl p-4 mb-6 space-y-2">
         <div className="flex justify-between text-sm">
-          <span className="text-slate-500">Paciente</span>
+          <span className="text-slate-500">Cliente</span>
           <span className="font-medium">{appointment.name}</span>
         </div>
         <div className="flex justify-between text-sm">

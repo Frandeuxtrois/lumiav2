@@ -1,6 +1,6 @@
 {
   "name": "Lumina | Gestión Terapéutica",
-  "description": "Sistema de gestión de turnos para psicólogos con panel de administración y reserva pública.",
+  "description": "Sistema de gestión de turnos con panel de administración y reserva pública.",
   "requestFramePermissions": [],
   "majorCapabilities": []
 }

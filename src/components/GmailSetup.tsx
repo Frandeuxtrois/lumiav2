@@ -6,7 +6,7 @@ const STEPS = [
   {
     icon: Mail,
     title: '¿Para qué es esto?',
-    description: 'Lumina necesita tu Gmail para enviar confirmaciones y recordatorios a tus pacientes.',
+    description: 'Lumina necesita tu Gmail para enviar confirmaciones y recordatorios a tus clientes.',
     detail: 'Vamos a crear una "Contraseña de Aplicación" — es diferente a tu contraseña normal y solo la usa Lumina. Podés revocarla cuando quieras sin cambiar tu contraseña real.',
     action: null,
     tip: null,

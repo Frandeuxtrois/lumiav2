@@ -8,7 +8,7 @@ import { SlotSelector } from './components/SlotSelector';
 import { BookingForm, BookingFormData } from './components/BookingForm';
 import { Auth } from './components/Auth';
 import { AdminDashboard } from './components/AdminDashboard';
-import { appointmentService, emailService } from './services/api';
+import { appointmentService, emailService, SlotTakenError } from './services/api';
 import { Appointment } from './types';
 import { format } from 'date-fns';
 import { CheckCircle2, Info, AlertTriangle } from 'lucide-react';
@@ -16,7 +16,7 @@ import { CancelAppointment } from './components/CancelAppointment';
 import { ProfileCard } from './components/ProfileCard';
 import { motion, AnimatePresence } from 'motion/react';
 
-const PatientBooking: React.FC = () => {
+const ClientBooking: React.FC = () => {
   const [selectedDate, setSelectedDate] = React.useState(new Date());
   const [availableSlots, setAvailableSlots] = React.useState<Appointment[]>([]);
   const [selectedSlotId, setSelectedSlotId] = React.useState<string | null>(null);
@@ -26,6 +26,7 @@ const PatientBooking: React.FC = () => {
   const [calendarRefresh, setCalendarRefresh] = React.useState(0);
   const [bookedSlot, setBookedSlot] = React.useState<{ date: string; time: string; name: string } | null>(null);
   const [emailWarning, setEmailWarning] = React.useState<string | null>(null);
+  const [bookingError, setBookingError] = React.useState<string | null>(null);
 
   const fetchSlots = React.useCallback(async () => {
     setLoadingSlots(true);
@@ -44,6 +45,7 @@ const PatientBooking: React.FC = () => {
   const handleBook = async (data: BookingFormData) => {
     if (!selectedSlotId) return;
     setBookingLoading(true);
+    setBookingError(null);
     try {
       const slot = availableSlots.find(s => s.id === selectedSlotId)!;
       await appointmentService.bookAppointment(selectedSlotId, data);
@@ -59,7 +61,15 @@ const PatientBooking: React.FC = () => {
       setStep(3);
       setCalendarRefresh(r => r + 1);
     } catch (err) {
-      alert(err instanceof Error ? err.message : 'Error al reservar');
+      if (err instanceof SlotTakenError) {
+        setBookingError('Ese horario acaba de ser tomado por otra persona. Elegí otro de la lista.');
+        setSelectedSlotId(null);
+        setStep(1);
+        setCalendarRefresh(r => r + 1);
+        await fetchSlots();
+      } else {
+        setBookingError(err instanceof Error ? err.message : 'No pudimos completar la reserva. Intentá de nuevo.');
+      }
     } finally {
       setBookingLoading(false);
     }
@@ -90,7 +100,7 @@ const PatientBooking: React.FC = () => {
         {bookedSlot && (
           <div className="bg-slate-50 rounded-xl p-4 mb-6 text-left space-y-2">
             <div className="flex justify-between text-sm">
-              <span className="text-slate-500">Paciente</span>
+              <span className="text-slate-500">Cliente</span>
               <span className="font-medium text-slate-900">{bookedSlot.name}</span>
             </div>
             <div className="flex justify-between text-sm">
@@ -118,15 +128,21 @@ const PatientBooking: React.FC = () => {
   return (
     <div>
     <ProfileCard />
+    {bookingError && (
+      <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-xl p-4 mb-6">
+        <AlertTriangle size={20} className="text-amber-600 shrink-0 mt-0.5" />
+        <p className="text-sm font-medium text-amber-900">{bookingError}</p>
+      </div>
+    )}
     <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
       <div className="md:col-span-5 flex flex-col gap-6">
         <div className="bg-white rounded-2xl shadow-sm border border-border-gray p-6">
           <h2 className="text-lg font-semibold mb-1">Paso 1: Fecha y Hora</h2>
-          <p className="text-xs text-slate-500 mb-6">Selecciona el momento ideal para tu sesión.</p>
+          <p className="text-xs text-slate-500 mb-6">Selecciona el momento ideal para tu turno.</p>
           
           <Calendar
             selectedDate={selectedDate}
-            onDateSelect={(date) => { setSelectedDate(date); setSelectedSlotId(null); }}
+            onDateSelect={(date) => { setSelectedDate(date); setSelectedSlotId(null); setBookingError(null); }}
             refreshTrigger={calendarRefresh}
           />
 
@@ -218,7 +234,7 @@ export default function App() {
     <BrowserRouter>
       <Layout user={user}>
         <Routes>
-          <Route path="/" element={<PatientBooking />} />
+          <Route path="/" element={<ClientBooking />} />
           <Route path="/login" element={user ? <Navigate to="/admin" /> : <Auth />} />
           <Route path="/admin" element={(user || !supabaseReady) ? <AdminDashboard /> : <Navigate to="/login" />} />
           <Route path="/cancelar" element={<CancelAppointment />} />

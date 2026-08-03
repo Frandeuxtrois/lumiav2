@@ -55,8 +55,8 @@ export const Manual: React.FC<Props> = ({ onClose }) => (
       {/* Content */}
       <div className="overflow-y-auto p-6 space-y-4">
 
-        <Section icon={<Users size={16} />} title="¿Qué ve y vive tu paciente?">
-          <p className="text-slate-500 mb-2">Cuando un paciente entra a tu página de turnos, esto es lo que pasa paso a paso:</p>
+        <Section icon={<Users size={16} />} title="¿Qué ve y vive tu cliente?">
+          <p className="text-slate-500 mb-2">Cuando un cliente entra a tu página de turnos, esto es lo que pasa paso a paso:</p>
           <div className="bg-slate-50 rounded-xl p-4 space-y-2">
             <p>📅 Ve un <strong>calendario</strong> donde los días en <strong>verde</strong> tienen turnos disponibles y los que están en <strong>rojo</strong> están completos.</p>
             <p>🕐 Elige el <strong>día y horario</strong> que le queda cómodo. Los turnos ya tomados aparecen tachados y no se pueden seleccionar.</p>
@@ -75,7 +75,7 @@ export const Manual: React.FC<Props> = ({ onClose }) => (
             </div>
             <div className="bg-slate-50 rounded-xl p-3">
               <p className="font-semibold mb-1">Rango — para un día completo</p>
-              <p className="text-slate-500">Elegís una fecha, el horario de inicio, el horario de cierre y cuánto dura cada sesión (30, 45, 60 o 90 minutos). El sistema crea todos los turnos del día solo. Antes de confirmar te muestra cuántos va a crear.</p>
+              <p className="text-slate-500">Elegís una fecha, el horario de inicio, el horario de cierre y cuánto dura cada turno (30, 45, 60 o 90 minutos). El sistema crea todos los turnos del día solo. Antes de confirmar te muestra cuántos va a crear.</p>
             </div>
             <div className="bg-slate-50 rounded-xl p-3">
               <p className="font-semibold mb-1">Período — para varias semanas de una vez</p>
@@ -100,39 +100,39 @@ export const Manual: React.FC<Props> = ({ onClose }) => (
 
         <Section icon={<CheckCircle2 size={16} />} title="Estados de los turnos — ¿qué significa cada color?">
           <div className="space-y-2">
-            <Tag color="bg-green-50 text-green-600" label="Disponible" desc="El horario está libre. Los pacientes lo pueden ver y reservar." />
-            <Tag color="bg-blue-50 text-blue-600" label="Reservado" desc="Un paciente tomó ese turno y el sistema ya le envió el email de confirmación." />
-            <Tag color="bg-slate-100 text-slate-400" label="Completado" desc="La sesión se realizó. Lo marcás vos para llevar registro de las consultas." />
-            <Tag color="bg-red-50 text-red-500" label="Cancelado" desc="El turno fue cancelado, ya sea por el paciente o por vos." />
+            <Tag color="bg-green-50 text-green-600" label="Disponible" desc="El horario está libre. Los clientes lo pueden ver y reservar." />
+            <Tag color="bg-blue-50 text-blue-600" label="Reservado" desc="Un cliente tomó ese turno y el sistema ya le envió el email de confirmación." />
+            <Tag color="bg-slate-100 text-slate-400" label="Completado" desc="El turno se realizó. Lo marcás vos para llevar registro." />
+            <Tag color="bg-red-50 text-red-500" label="Cancelado" desc="El turno fue cancelado, ya sea por el cliente o por vos." />
           </div>
           <div className="mt-3 space-y-1.5">
             <p className="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Qué podés hacer con cada turno:</p>
             <div className="flex items-center gap-2"><CheckCircle2 size={14} className="text-green-500 shrink-0" /><span>Marcar como completado (solo aparece en turnos reservados)</span></div>
-            <div className="flex items-center gap-2"><Trash2 size={14} className="text-red-400 shrink-0" /><span>Eliminar el turno. Si había un paciente, le llega un email avisándole automáticamente.</span></div>
+            <div className="flex items-center gap-2"><Trash2 size={14} className="text-red-400 shrink-0" /><span>Eliminar el turno. Si había un cliente, le llega un email avisándole automáticamente.</span></div>
           </div>
         </Section>
 
         <Section icon={<XCircle size={16} />} title="Cancelación de turnos">
           <div className="space-y-3">
             <div className="bg-slate-50 rounded-xl p-3">
-              <p className="font-semibold mb-1">Si cancela el paciente</p>
-              <p className="text-slate-500">En el email que recibe el paciente hay un botón rojo "Cancelar turno". Si lo usa con más de 48 horas de anticipación, el turno queda libre automáticamente y <strong>vos recibís un email avisándote</strong>. Si intenta cancelar con menos de 48 horas, el sistema se lo impide.</p>
+              <p className="font-semibold mb-1">Si cancela el cliente</p>
+              <p className="text-slate-500">En el email que recibe el cliente hay un botón rojo "Cancelar turno". Si lo usa con más de 48 horas de anticipación, el turno queda libre automáticamente y <strong>vos recibís un email avisándote</strong>. Si intenta cancelar con menos de 48 horas, el sistema se lo impide.</p>
             </div>
             <div className="bg-slate-50 rounded-xl p-3">
               <p className="font-semibold mb-1">Si cancelás vos desde el panel</p>
-              <p className="text-slate-500">Eliminás el turno reservado desde la tabla. Antes de confirmar, el sistema te avisa. Si confirmás, <strong>el paciente recibe un email automáticamente</strong> notificándole que su turno fue cancelado.</p>
+              <p className="text-slate-500">Eliminás el turno reservado desde la tabla. Antes de confirmar, el sistema te avisa. Si confirmás, <strong>el cliente recibe un email automáticamente</strong> notificándole que su turno fue cancelado.</p>
             </div>
           </div>
         </Section>
 
         <Section icon={<Bell size={16} />} title="Recordatorios automáticos — no tenés que hacer nada">
-          <p className="text-slate-500 mb-3">El sistema recuerda a los pacientes sus turnos de forma automática. Vos no intervenís para nada:</p>
+          <p className="text-slate-500 mb-3">El sistema recuerda a los clientes sus turnos de forma automática. Vos no intervenís para nada:</p>
           <div className="space-y-2">
             <div className="flex items-center gap-3 bg-slate-50 rounded-xl p-3">
               <span className="text-2xl">⏰</span>
               <div>
                 <p className="font-semibold">El día anterior</p>
-                <p className="text-slate-500">El paciente recibe un email recordándole el turno del día siguiente, con la opción de cancelar si lo necesita.</p>
+                <p className="text-slate-500">El cliente recibe un email recordándole el turno del día siguiente, con la opción de cancelar si lo necesita.</p>
               </div>
             </div>
             <div className="flex items-center gap-3 bg-slate-50 rounded-xl p-3">
@@ -157,7 +157,7 @@ export const Manual: React.FC<Props> = ({ onClose }) => (
         </Section>
 
         <Section icon={<Image size={16} />} title="Tu foto de perfil">
-          <p className="text-slate-500 mb-2">Tu foto aparece en la página donde los pacientes reservan, para que sepan con quién están hablando.</p>
+          <p className="text-slate-500 mb-2">Tu foto aparece en la página donde los clientes reservan, para que sepan con quién están hablando.</p>
           <Step n={1} text='Hacé clic en "Foto de Perfil" en el panel lateral.' />
           <Step n={2} text="Elegí una foto desde tu celular o computadora. Puede ser JPG o PNG, hasta 5 MB." />
           <Step n={3} text="Guardá. La foto se actualiza en segundos." />
