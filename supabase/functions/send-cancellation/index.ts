@@ -7,7 +7,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-function buildCancelIcs(date: string, time: string, appointmentId: string, gmailUser: string): string {
+function buildCancelIcs(date: string, time: string, appointmentId: string, gmailUser: string, business: string): string {
   const [y, m, d] = date.split('-');
   const [h, min] = time.split(':');
   const dtStart = `${y}${m}${d}T${h}${min}00`;
@@ -17,17 +17,17 @@ function buildCancelIcs(date: string, time: string, appointmentId: string, gmail
   return [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//Lumina//Turnero//ES',
+    'PRODID:-//Turnos AWD//Turnero//ES',
     'CALSCALE:GREGORIAN',
     'METHOD:CANCEL',
     'BEGIN:VEVENT',
-    `UID:${appointmentId}@lumina`,
+    `UID:${appointmentId}@turnosawd`,
     `DTSTART;TZID=America/Argentina/Buenos_Aires:${dtStart}`,
     `DTEND;TZID=America/Argentina/Buenos_Aires:${dtEnd}`,
-    'SUMMARY:Turno — Lumina',
+    `SUMMARY:Turno — ${business}`,
     'STATUS:CANCELLED',
     'SEQUENCE:1',
-    `ORGANIZER;CN=Lumina:mailto:${gmailUser}`,
+    `ORGANIZER;CN=${business}:mailto:${gmailUser}`,
     'END:VEVENT',
     'END:VCALENDAR',
   ].join('\r\n');
@@ -49,9 +49,10 @@ serve(async (req) => {
     const { data: settingsRows } = await supabase
       .from('settings')
       .select('key, value')
-      .in('key', ['gmail_user', 'gmail_app_password']);
+      .in('key', ['gmail_user', 'gmail_app_password', 'business_name']);
 
-    if (!settingsRows || settingsRows.length < 2) {
+    // business_name es opcional, por eso el corte sigue siendo por las 2 de Gmail.
+    if (!settingsRows || settingsRows.filter(r => r.key.startsWith('gmail_')).length < 2) {
       return new Response(JSON.stringify({ error: 'Email no configurado.' }), { status: 500, headers: corsHeaders });
     }
 
@@ -59,8 +60,9 @@ serve(async (req) => {
     const GMAIL_USER = settings['gmail_user'];
     const GMAIL_PASS = settings['gmail_app_password'];
     const OWNER_EMAIL = Deno.env.get('OWNER_EMAIL') ?? GMAIL_USER;
+    const BUSINESS = settings['business_name']?.trim() || 'Turnos';
 
-    const cancelIcs = buildCancelIcs(date, time, appointmentId, GMAIL_USER);
+    const cancelIcs = buildCancelIcs(date, time, appointmentId, GMAIL_USER, BUSINESS);
     const icsAttachment = {
       filename: 'cancelacion.ics',
       content: cancelIcs,
@@ -76,7 +78,7 @@ serve(async (req) => {
     if (cancelledBy === 'client') {
       // Cliente cancelo -> notificar al profesional con .ics CANCEL
       await transporter.sendMail({
-        from: `"Lumina" <${GMAIL_USER}>`,
+        from: `"${BUSINESS}" <${GMAIL_USER}>`,
         to: OWNER_EMAIL,
         subject: `Turno cancelado por el cliente: ${name} — ${date} ${time}`,
         html: `
@@ -98,7 +100,7 @@ serve(async (req) => {
       // El profesional cancelo -> notificar al cliente con .ics CANCEL + aviso propio
       await Promise.all([
         transporter.sendMail({
-          from: `"Lumina" <${GMAIL_USER}>`,
+          from: `"${BUSINESS}" <${GMAIL_USER}>`,
           to: email,
           subject: `Tu turno fue cancelado — ${date} ${time}`,
           html: `
@@ -116,7 +118,7 @@ serve(async (req) => {
           attachments: [icsAttachment],
         }),
         transporter.sendMail({
-          from: `"Lumina" <${GMAIL_USER}>`,
+          from: `"${BUSINESS}" <${GMAIL_USER}>`,
           to: OWNER_EMAIL,
           subject: `Turno cancelado: ${name} — ${date} ${time}`,
           html: `

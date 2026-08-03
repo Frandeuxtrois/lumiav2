@@ -100,7 +100,10 @@ export const AdminDashboard: React.FC = () => {
       {/* Header */}
       <div className="col-span-12 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 bg-white p-6 rounded-2xl border border-border-gray shadow-sm">
         <div>
-          <h2 className="text-xl font-bold">Panel de Control</h2>
+          <div className="flex items-center gap-2.5">
+            <h2 className="text-xl font-bold">Panel de Control</h2>
+            <span className="text-[10px] font-bold uppercase tracking-widest text-slate-400 border border-slate-200 rounded px-1.5 py-0.5">Turnos AWD</span>
+          </div>
           <p className="text-sm text-slate-500">Gestión de turnos y disponibilidad.</p>
         </div>
         <div className="flex gap-2 items-center flex-wrap">

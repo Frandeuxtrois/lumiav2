@@ -6,8 +6,8 @@ const STEPS = [
   {
     icon: Mail,
     title: '¿Para qué es esto?',
-    description: 'Lumina necesita tu Gmail para enviar confirmaciones y recordatorios a tus clientes.',
-    detail: 'Vamos a crear una "Contraseña de Aplicación" — es diferente a tu contraseña normal y solo la usa Lumina. Podés revocarla cuando quieras sin cambiar tu contraseña real.',
+    description: 'Turnos AWD necesita tu Gmail para enviar confirmaciones y recordatorios a tus clientes.',
+    detail: 'Vamos a crear una "Contraseña de Aplicación" — es diferente a tu contraseña normal y solo la usa Turnos AWD. Podés revocarla cuando quieras sin cambiar tu contraseña real.',
     action: null,
     tip: null,
   },
@@ -25,7 +25,7 @@ const STEPS = [
   {
     icon: Key,
     title: 'Creá tu Contraseña de Aplicación',
-    description: 'En la página que se abre, Google te va a generar una contraseña especial para Lumina.',
+    description: 'En la página que se abre, Google te va a generar una contraseña especial para Turnos AWD.',
     detail: null,
     action: {
       label: 'Ir a Contraseñas de Aplicación',
@@ -33,7 +33,7 @@ const STEPS = [
     },
     tip: null,
     instructions: [
-      'En "Nombre", escribí "Lumina Turnero"',
+      'En "Nombre", escribí "Turnos AWD"',
       'Hacé clic en Crear',
       'Google te muestra una contraseña de 16 letras',
       'Copiala (con o sin espacios, funciona igual)',

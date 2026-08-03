@@ -1,6 +1,6 @@
 {
-  "name": "Lumina | Gestión Terapéutica",
-  "description": "Sistema de gestión de turnos con panel de administración y reserva pública.",
+  "name": "Turnos AWD",
+  "description": "Turnero online con panel de administración y reserva pública. Por Argentina Web Design.",
   "requestFramePermissions": [],
   "majorCapabilities": []
 }

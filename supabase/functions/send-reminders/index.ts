@@ -13,15 +13,16 @@ serve(async (req) => {
     const { data: settingsRows } = await supabase
       .from('settings')
       .select('key, value')
-      .in('key', ['gmail_user', 'gmail_app_password']);
+      .in('key', ['gmail_user', 'gmail_app_password', 'business_name']);
 
-    if (!settingsRows || settingsRows.length < 2) {
+    if (!settingsRows || settingsRows.filter(r => r.key.startsWith('gmail_')).length < 2) {
       return new Response(JSON.stringify({ error: 'Email no configurado.' }), { status: 500 });
     }
 
     const settings = Object.fromEntries(settingsRows.map(r => [r.key, r.value]));
     const GMAIL_USER = settings['gmail_user'];
     const GMAIL_PASS = settings['gmail_app_password'];
+    const BUSINESS = settings['business_name']?.trim() || 'Turnos';
     // Sin APP_URL los links de cancelacion apuntan a localhost y no sirven en produccion.
     const APP_URL = Deno.env.get('APP_URL') ?? 'http://localhost:3000';
     if (!Deno.env.get('APP_URL')) {
@@ -64,7 +65,7 @@ serve(async (req) => {
       const html = `
         <div style="font-family: sans-serif; max-width: 480px; margin: 0 auto;">
           <h2 style="color: #1a1a1a;">Recordatorio de turno</h2>
-          <p>Hola <strong>${apt.name}</strong>, te recordamos que en <strong>${hoursLabel}</strong> tenés un turno con Lumina.</p>
+          <p>Hola <strong>${apt.name}</strong>, te recordamos que en <strong>${hoursLabel}</strong> tenés un turno con ${BUSINESS}.</p>
           <div style="background: #f9f9f9; border-radius: 8px; padding: 16px; margin: 24px 0;">
             <p style="margin: 0;"><strong>Fecha:</strong> ${apt.date}</p>
             <p style="margin: 8px 0 0;"><strong>Hora:</strong> ${apt.time}</p>
@@ -79,7 +80,7 @@ serve(async (req) => {
       `;
 
       await transporter.sendMail({
-        from: `"Lumina" <${GMAIL_USER}>`,
+        from: `"${BUSINESS}" <${GMAIL_USER}>`,
         to: apt.email,
         subject: `Recordatorio: tu turno es en ${hoursLabel}`,
         html,

@@ -7,7 +7,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-function buildIcs(date: string, time: string, appointmentId: string, name: string, cancelUrl: string, gmailUser: string): string {
+function buildIcs(date: string, time: string, appointmentId: string, name: string, cancelUrl: string, gmailUser: string, business: string): string {
   // date: YYYY-MM-DD, time: HH:MM
   const [y, m, d] = date.split('-');
   const [h, min] = time.split(':');
@@ -18,16 +18,19 @@ function buildIcs(date: string, time: string, appointmentId: string, name: strin
   return [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//Lumina//Turnero//ES',
+    // PRODID identifica al software que genero el archivo, no al negocio.
+    'PRODID:-//Turnos AWD//Turnero//ES',
     'CALSCALE:GREGORIAN',
     'METHOD:REQUEST',
     'BEGIN:VEVENT',
-    `UID:${appointmentId}@lumina`,
+    // El UID es fijo a proposito: tiene que coincidir con el .ics de cancelacion.
+    // Si dependiera del nombre del negocio, renombrarlo romperia las cancelaciones.
+    `UID:${appointmentId}@turnosawd`,
     `DTSTART;TZID=America/Argentina/Buenos_Aires:${dtStart}`,
     `DTEND;TZID=America/Argentina/Buenos_Aires:${dtEnd}`,
-    'SUMMARY:Turno — Lumina',
+    `SUMMARY:Turno — ${business}`,
     `DESCRIPTION:Turno confirmado.\\nPara cancelar: ${cancelUrl}`,
-    `ORGANIZER;CN=Lumina:mailto:${gmailUser}`,
+    `ORGANIZER;CN=${business}:mailto:${gmailUser}`,
     `ATTENDEE;CN=${name}:mailto:unknown`,
     'STATUS:CONFIRMED',
     'SEQUENCE:0',
@@ -59,9 +62,10 @@ serve(async (req) => {
     const { data: settingsRows, error: settingsError } = await supabase
       .from('settings')
       .select('key, value')
-      .in('key', ['gmail_user', 'gmail_app_password']);
+      .in('key', ['gmail_user', 'gmail_app_password', 'business_name']);
 
-    if (settingsError || !settingsRows || settingsRows.length < 2) {
+    // business_name es opcional, por eso el corte sigue siendo por las 2 de Gmail.
+    if (settingsError || !settingsRows || settingsRows.filter(r => r.key.startsWith('gmail_')).length < 2) {
       return new Response(JSON.stringify({ error: 'Email no configurado.' }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
@@ -72,6 +76,7 @@ serve(async (req) => {
     const GMAIL_USER = settings['gmail_user'];
     const GMAIL_PASS = settings['gmail_app_password'];
     const OWNER_EMAIL = Deno.env.get('OWNER_EMAIL') ?? GMAIL_USER;
+    const BUSINESS = settings['business_name']?.trim() || 'Turnos';
     // Sin APP_URL los links de cancelacion apuntan a localhost y no sirven en produccion.
     const APP_URL = Deno.env.get('APP_URL') ?? 'http://localhost:3000';
     if (!Deno.env.get('APP_URL')) {
@@ -79,7 +84,7 @@ serve(async (req) => {
     }
 
     const cancelUrl = `${APP_URL}/cancelar?id=${appointmentId}`;
-    const icsContent = buildIcs(date, time, appointmentId, name, cancelUrl, GMAIL_USER);
+    const icsContent = buildIcs(date, time, appointmentId, name, cancelUrl, GMAIL_USER, BUSINESS);
 
     // Google Calendar link
     const [y, m, d] = date.split('-');
@@ -88,7 +93,7 @@ serve(async (req) => {
     const endH = String(Number(h) + 1).padStart(2, '0');
     const dtEnd = `${y}${m}${d}T${endH}${min}00`;
     const gcalUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE`
-      + `&text=${encodeURIComponent('Turno — Lumina')}`
+      + `&text=${encodeURIComponent(`Turno — ${BUSINESS}`)}`
       + `&dates=${dtStart}/${dtEnd}`
       + `&details=${encodeURIComponent(`Turno confirmado.\nPara cancelar: ${cancelUrl}`)}`;
 
@@ -145,14 +150,14 @@ serve(async (req) => {
 
     await Promise.all([
       transporter.sendMail({
-        from: `"Lumina" <${GMAIL_USER}>`,
+        from: `"${BUSINESS}" <${GMAIL_USER}>`,
         to,
         subject: `Confirmación de turno — ${date} ${time}`,
         html: clientHtml,
         attachments: [icsAttachment],
       }),
       transporter.sendMail({
-        from: `"Lumina" <${GMAIL_USER}>`,
+        from: `"${BUSINESS}" <${GMAIL_USER}>`,
         to: OWNER_EMAIL,
         subject: `Nueva reserva: ${name} — ${date} ${time}`,
         html: ownerHtml,

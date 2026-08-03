@@ -1,7 +1,8 @@
 import React from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { User } from '@supabase/supabase-js';
+import { useBusinessName } from '../lib/useBusinessName';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -21,7 +22,16 @@ const useClock = () => {
 
 export const Layout: React.FC<LayoutProps> = ({ children, user }) => {
   const navigate = useNavigate();
+  const location = useLocation();
   const clock = useClock();
+  const businessName = useBusinessName();
+
+  // La atribucion al proveedor no va en las pantallas internas del negocio.
+  const isPublicPage = !['/admin', '/login'].includes(location.pathname);
+
+  React.useEffect(() => {
+    document.title = businessName;
+  }, [businessName]);
 
   const handleLogout = async () => {
     await supabase.auth.signOut();
@@ -35,7 +45,7 @@ export const Layout: React.FC<LayoutProps> = ({ children, user }) => {
           <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
             <div className="w-3 h-3 bg-white rounded-full"></div>
           </div>
-          <span className="text-xl font-medium tracking-tight text-primary hidden sm:block">Lumina</span>
+          <span className="text-xl font-medium tracking-tight text-primary hidden sm:block">{businessName}</span>
         </Link>
         <div className="flex items-center gap-4 md:gap-6">
           <span className="text-xs font-mono text-slate-400 hidden md:inline">{clock}</span>
@@ -64,9 +74,22 @@ export const Layout: React.FC<LayoutProps> = ({ children, user }) => {
         {children}
       </main>
 
-      <footer className="h-12 bg-white border-t border-border-gray flex items-center px-4 md:px-8 text-[10px] text-slate-400 uppercase tracking-[2px] justify-between">
-        <span>Sesión segura • RLS Enabled • Realtime Sync</span>
-        <span className="hidden sm:inline">V1.0.4</span>
+      <footer className="h-12 bg-white border-t border-border-gray flex items-center px-4 md:px-8 text-[11px] text-slate-400 justify-between">
+        {isPublicPage ? (
+          <span>
+            Sistema de turnos por{' '}
+            <a
+              href="https://argentinawebdesign.com.ar"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-slate-500 hover:text-primary underline underline-offset-2 transition-colors"
+            >
+              Argentina Web Design
+            </a>
+          </span>
+        ) : (
+          <span className="uppercase tracking-[2px]">Turnos AWD</span>
+        )}
       </footer>
     </div>
   );

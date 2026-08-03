@@ -1,4 +1,4 @@
--- Esquema base de Lumina. Aplicar primero en un proyecto nuevo.
+-- Esquema base de Turnos AWD. Aplicar primero en un proyecto nuevo.
 
 create table appointments (
   id uuid primary key default gen_random_uuid(),

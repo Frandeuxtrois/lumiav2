@@ -13,3 +13,6 @@ coverage/
 .supabase/
 secrets.json
 service_role*
+
+# Artefactos de Visual Studio
+.vs/

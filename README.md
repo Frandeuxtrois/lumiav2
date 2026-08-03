@@ -1,4 +1,4 @@
-# Lumina — Turnero
+# Turnos AWD
 
 SPA de reservas online para profesionales y comercios independientes. El cliente elige fecha y horario, deja sus datos y recibe confirmación por email con archivo de calendario adjunto. Quien atiende gestiona todo desde un panel privado.
 
@@ -133,6 +133,7 @@ Configuración key/value que se edita desde el panel.
 | `gmail_user` | Email de Gmail |
 | `gmail_app_password` | Contraseña de aplicación de 16 caracteres |
 | `profile_photo` | URL pública de la foto |
+| `business_name` | Nombre del negocio. Alimenta header, pestaña, mails y `.ics`. Si falta, se usa "Turnos" |
 
 ### RLS
 
@@ -144,12 +145,12 @@ El calendario público necesita ver los turnos ocupados para marcar los días ll
 | appointments | `anon_book_slot` | anon | UPDATE `available` → `booked` |
 | appointments | `anon_cancel_slot` | anon | UPDATE `booked` → `available` |
 | appointments | `authenticated_full_access_appointments` | authenticated | ALL |
-| settings | `anon_read_profile_photo` | anon | SELECT solo `key = 'profile_photo'` |
+| settings | `anon_read_public_settings` | anon | SELECT solo `key in ('profile_photo','business_name')` |
 | settings | `authenticated_full_access_settings` | authenticated | ALL |
 | storage.objects | `anon_read_profile_objects` | anon | SELECT bucket `profile` |
 | storage.objects | `authenticated_manage_profile_photo` | authenticated | ALL bucket `profile` |
 
-Todo esto está en `001` y `002`. No editar a mano desde el dashboard: si cambia, actualizar la migración.
+Todo esto está en `001`, `002` y `004`. No editar a mano desde el dashboard: si cambia, actualizar la migración.
 
 ---
 
@@ -193,7 +194,7 @@ Las tres leen las credenciales de Gmail desde `settings` usando la service_role 
 | `send-cancellation` | Al cancelar, desde el link o desde el panel | Notifica a la contraparte con un `.ics` `METHOD:CANCEL` que borra el evento del calendario |
 | `send-reminders` | Cron cada 30 min | Recordatorio a los turnos que caen en la ventana de 24h o 2h, y marca el flag para no repetir |
 
-Los `.ics` usan `UID:<appointmentId>@lumina`. El UID debe coincidir entre confirmación y cancelación, si no el evento no se borra del calendario del cliente.
+Los `.ics` usan `UID:<appointmentId>@turnosawd`. El UID debe coincidir entre confirmación y cancelación, si no el evento no se borra del calendario del cliente.
 
 Para actualizar una función: Supabase → Edge Functions → seleccionar → pegar el contenido del archivo → Deploy.
 
