@@ -1,5 +1,6 @@
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { parseISO } from 'date-fns';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -14,7 +15,9 @@ export function formatTime(time: string) {
 }
 
 export function formatDate(dateStr: string) {
-  return new Date(dateStr).toLocaleDateString('es-ES', {
+  // parseISO interpreta "2026-08-03" como medianoche LOCAL. new Date() la toma
+  // como UTC, y al mostrarla en Argentina (UTC-3) retrocedia al dia anterior.
+  return parseISO(dateStr).toLocaleDateString('es-ES', {
     weekday: 'long',
     year: 'numeric',
     month: 'long',
