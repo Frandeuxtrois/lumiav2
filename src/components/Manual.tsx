@@ -116,10 +116,10 @@ export const Manual: React.FC<Props> = ({ onClose }) => (
               La lista de turnos de una fecha, con los datos de cada cliente y sus comentarios. Es la vista donde trabajás el día a día. Cambiás de fecha con el selector de arriba.
             </Card>
             <Card title="Semana">
-              Los 7 días de un vistazo, para ver cómo viene cargada la semana. Navegás con las flechas.
+              Los 7 días de un vistazo, para ver cómo viene cargada la semana. Navegás con las flechas. Desde acá también cerrás la semana entera de un botón.
             </Card>
             <Card title="Mes">
-              El mes completo con el resumen de cada día (cuántos libres, cuántos reservados). Sirve para planificar y para bloquear varios días de una.
+              El mes completo con el resumen de cada día (cuántos libres, cuántos reservados). Sirve para planificar y para bloquear semanas o días sueltos de una.
             </Card>
           </div>
         </Section>
@@ -130,14 +130,21 @@ export const Manual: React.FC<Props> = ({ onClose }) => (
             <Card title="Un día suelto">
               En la vista <strong className="text-ink">Día</strong>, con la fecha seleccionada, tocás "Bloquear día". El mismo botón pasa a decir "Desbloquear día" para volver atrás.
             </Card>
-            <Card title="Varios días juntos">
-              En la vista <strong className="text-ink">Mes</strong>, hacés clic en los días que querés. Abajo aparece una barra con cuántos seleccionaste y los botones "Bloquear" y "Abrir".
+            <Card title="Una semana entera">
+              En la vista <strong className="text-ink">Semana</strong>, arriba de la grilla, tocás "Bloquear semana". Cierra los siete días que estás viendo de una. Para volver atrás, "Abrir semana".
+            </Card>
+            <Card title="Varias semanas — vacaciones">
+              En la vista <strong className="text-ink">Mes</strong>, cada fila tiene a la izquierda un botón vertical que dice "Semana": lo tocás y se selecciona esa semana completa. Tocá el de la siguiente y ya tenés dos semanas. Después, "Bloquear".
+            </Card>
+            <Card title="Días sueltos a dedo">
+              También en la vista <strong className="text-ink">Mes</strong>, hacés clic en los días que quieras. Abajo aparece una barra con cuántos seleccionaste y los botones "Bloquear" y "Abrir".
             </Card>
           </div>
           <div className="mt-3 space-y-1.5">
             <p className="text-xs font-semibold uppercase tracking-wider mb-1">Atajos en la vista Mes:</p>
             <div className="flex items-start gap-2"><MousePointerClick size={14} className="shrink-0 mt-0.5 text-primary" /><span><strong className="text-ink">Un clic:</strong> selecciona o deselecciona ese día.</span></div>
-            <div className="flex items-start gap-2"><MousePointerClick size={14} className="shrink-0 mt-0.5 text-primary" /><span><strong className="text-ink">Shift + clic:</strong> selecciona todo el rango desde el último día que tocaste. Ideal para dos semanas de vacaciones.</span></div>
+            <div className="flex items-start gap-2"><MousePointerClick size={14} className="shrink-0 mt-0.5 text-primary" /><span><strong className="text-ink">Botón "Semana":</strong> selecciona o deselecciona los siete días de esa fila. Si la semana arranca en el mes anterior, esos días entran igual — unas vacaciones no se cortan porque cambie el mes.</span></div>
+            <div className="flex items-start gap-2"><MousePointerClick size={14} className="shrink-0 mt-0.5 text-primary" /><span><strong className="text-ink">Shift + clic:</strong> selecciona todo el rango desde el último día que tocaste. Sirve para vacaciones que no arrancan un lunes.</span></div>
             <div className="flex items-start gap-2"><MousePointerClick size={14} className="shrink-0 mt-0.5 text-primary" /><span><strong className="text-ink">Doble clic:</strong> abre ese día en la vista Día.</span></div>
           </div>
           <Nota>

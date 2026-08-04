@@ -1,7 +1,7 @@
 import React from 'react';
 import { format, startOfWeek, addDays, addWeeks, subWeeks, isSameDay, isToday } from 'date-fns';
 import { es } from 'date-fns/locale';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Ban, RotateCcw } from 'lucide-react';
 import { Appointment, AppointmentStatus } from '../types';
 import { formatTime, cn } from '../lib/utils';
 import { CheckCircle, Trash2 } from 'lucide-react';
@@ -12,24 +12,35 @@ interface Props {
   loading: boolean;
   onStatusChange: (id: string, status: AppointmentStatus) => void;
   onDelete: (id: string, status: string) => void;
+  onBlockDays: (dates: string[]) => void;
+  onUnblockDays: (dates: string[]) => void;
+  working: boolean;
 }
 
-export const WeekView: React.FC<Props> = ({ appointments, loading, onStatusChange, onDelete }) => {
+export const WeekView: React.FC<Props> = ({
+  appointments, loading, onStatusChange, onDelete, onBlockDays, onUnblockDays, working,
+}) => {
   const [weekStart, setWeekStart] = React.useState(
     startOfWeek(new Date(), { weekStartsOn: 1 })
   );
 
   const days = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));
+  const weekKeys = days.map(d => format(d, 'yyyy-MM-dd'));
   const weekLabel = `${format(days[0], "d 'de' MMM", { locale: es })} — ${format(days[6], "d 'de' MMM yyyy", { locale: es })}`;
 
   const aptsForDay = (day: Date) =>
     appointments.filter(a => a.date === format(day, 'yyyy-MM-dd'))
       .sort((a, b) => a.time.localeCompare(b.time));
 
+  const enLaSemana = appointments.filter(a => weekKeys.includes(a.date));
+  const libresEnSemana = enLaSemana.filter(a => a.status === 'available').length;
+  const bloqueadosEnSemana = enLaSemana.filter(a => a.status === 'blocked').length;
+  const reservadosEnSemana = enLaSemana.filter(a => a.status === 'booked').length;
+
   return (
     <div>
       {/* Week navigation */}
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-4 gap-3 flex-wrap">
         <button onClick={() => setWeekStart(subWeeks(weekStart, 1))} className="p-1.5 rounded-awd bg-elevated hover:bg-elevated transition-colors">
           <ChevronLeft size={16} />
         </button>
@@ -38,6 +49,41 @@ export const WeekView: React.FC<Props> = ({ appointments, loading, onStatusChang
           <ChevronRight size={16} />
         </button>
       </div>
+
+      {(libresEnSemana > 0 || bloqueadosEnSemana > 0) && (
+        <div className="flex flex-wrap items-center gap-3 mb-4 px-3 py-2 rounded-awd border border-line bg-elevated">
+          <span className="text-xs text-muted">
+            Vacaciones o cierre: sacá toda la semana de circulación de una.
+          </span>
+          {reservadosEnSemana > 0 && (
+            <span className="text-[11px] text-warning">
+              {reservadosEnSemana} turno(s) ya reservado(s) — no se tocan
+            </span>
+          )}
+          <div className="flex gap-2 ml-auto">
+            {libresEnSemana > 0 && (
+              <button
+                onClick={() => onBlockDays(weekKeys)}
+                disabled={working}
+                className="px-3 py-1.5 rounded-awd border border-line text-xs font-bold uppercase tracking-wider hover:border-muted flex items-center gap-1.5 transition-colors disabled:opacity-50"
+                title={`Bloquear los ${libresEnSemana} horarios libres de esta semana`}
+              >
+                <Ban size={13} /> Bloquear semana
+              </button>
+            )}
+            {bloqueadosEnSemana > 0 && (
+              <button
+                onClick={() => onUnblockDays(weekKeys)}
+                disabled={working}
+                className="px-3 py-1.5 rounded-awd border border-accent text-accent text-xs font-bold uppercase tracking-wider hover:bg-accent/10 flex items-center gap-1.5 transition-colors disabled:opacity-50"
+                title={`Devolver a disponibles los ${bloqueadosEnSemana} horarios bloqueados de esta semana`}
+              >
+                <RotateCcw size={13} /> Abrir semana
+              </button>
+            )}
+          </div>
+        </div>
+      )}
 
       {loading ? (
         <div className="grid grid-cols-7 gap-2">

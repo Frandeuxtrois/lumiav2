@@ -100,7 +100,9 @@ El estado del servidor se maneja con llamadas directas al SDK de Supabase y `use
 
 **`CancelAppointment.tsx`** — Página del link del email. Ofrece **reprogramar** o **cancelar**, ambas sujetas al límite de horas (`CANCEL_HOURS_LIMIT`, default 48). Al cancelar devuelve el slot a `available` y borra los datos del cliente. Al reprogramar toma primero el horario nuevo y recién después libera el viejo, para que una carrera con otro cliente no lo deje sin turno.
 
-**`MonthView.tsx`** — Mes completo con el resumen de cada día. Clic para seleccionar, shift+clic para un rango, doble clic para abrir ese día. Desde ahí se bloquean o se abren varios días de una. Nunca toca turnos ya reservados: esos se cancelan a mano para que el cliente reciba el aviso.
+**`WeekView.tsx`** — Los 7 días de la semana. Incluye "Bloquear semana" / "Abrir semana" para cerrar de una los siete días visibles (vacaciones, cierre por reforma).
+
+**`MonthView.tsx`** — Mes completo con el resumen de cada día. La grilla arranca el lunes de la primera semana y termina el domingo de la última, así cada fila es una semana real: el botón vertical de la izquierda selecciona esa semana entera, incluidos los días que caen en el mes vecino. Además: clic para un día, shift+clic para un rango, doble clic para abrir ese día. Nunca toca turnos ya reservados: esos se cancelan a mano para que el cliente reciba el aviso.
 
 **`AdminDashboard.tsx`** — Vistas día, semana y mes. Marcar completado, eliminar, y accesos a los modales de configuración.
 
@@ -302,8 +304,9 @@ Las fechas se interpretan en `America/Argentina/Buenos_Aires` (UTC-3, hardcodead
 /admin
 ├── Vista día, semana o mes
 ├── Bloquear o abrir el día seleccionado (vista día)
-├── Bloquear o abrir varios días: clic, shift+clic para rango,
-│   doble clic para abrir ese día (vista mes)
+├── Bloquear o abrir la semana completa (vista semana)
+├── Bloquear o abrir por selección: botón "Semana" por fila, clic por día,
+│   shift+clic para rango, doble clic para abrir ese día (vista mes)
 ├── Marcar completado / eliminar (si estaba reservado, notifica al cliente)
 ├── "Nuevo Horario"      → individual / rango / período
 ├── "Foto de Perfil"     → sube a Storage

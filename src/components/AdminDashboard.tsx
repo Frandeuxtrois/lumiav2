@@ -9,6 +9,7 @@ import { ChangePassword } from './ChangePassword';
 import { CreateSlotsModal } from './CreateSlotsModal';
 import { PhotoUpload } from './PhotoUpload';
 import { ConfirmModal } from './ConfirmModal';
+import { STATUS_META } from '../lib/statusMeta';
 import { WeekView } from './WeekView';
 import { MonthView } from './MonthView';
 import { Manual } from './Manual';
@@ -193,8 +194,11 @@ export const AdminDashboard: React.FC = () => {
           <WeekView
             appointments={appointments}
             loading={loading}
+            working={blocking}
             onStatusChange={handleStatusChange}
             onDelete={handleDelete}
+            onBlockDays={dates => cambiarBloqueo(dates, true)}
+            onUnblockDays={dates => cambiarBloqueo(dates, false)}
           />
         </div>
       ) : (
@@ -238,15 +242,14 @@ export const AdminDashboard: React.FC = () => {
                     </td>
                     <td className="px-6 py-4 text-sm font-mono text-muted">{formatTime(apt.time)}</td>
                     <td className="px-6 py-4">
-                      <span className={cn(
-                        "px-2 py-1 rounded text-[9px] font-bold uppercase",
-                        apt.status === 'available' && "bg-accent/10 text-accent",
-                        apt.status === 'booked' && "bg-info/10 text-info",
-                        apt.status === 'completed' && "bg-elevated text-muted",
-                        apt.status === 'cancelled' && "bg-danger/10 text-danger",
-                      )}>
-                        {{ available: 'Disponible', booked: 'Reservado', completed: 'Completado', cancelled: 'Cancelado' }[apt.status]}
-                      </span>
+                      {(() => {
+                        const meta = STATUS_META[apt.status];
+                        return (
+                          <span className={cn('px-2 py-1 rounded border text-[9px] font-bold uppercase inline-flex items-center gap-1', meta.chip)}>
+                            <meta.Icon size={10} /> {meta.label}
+                          </span>
+                        );
+                      })()}
                     </td>
                     <td className="px-6 py-4 text-right">
                       <div className="flex justify-end gap-1">
@@ -340,22 +343,21 @@ export const AdminDashboard: React.FC = () => {
         <div className="bg-surface p-6 rounded-awd border border-line">
           <h4 className="text-xs font-bold uppercase tracking-widest text-muted mb-4">Ayuda de Estados</h4>
           <div className="space-y-3">
-            <div className="flex items-center gap-3 text-sm">
-              <div className="w-2 h-2 rounded-full bg-accent/100"></div>
-              <span className="text-muted">Disponible: listo para reservar.</span>
-            </div>
-            <div className="flex items-center gap-3 text-sm">
-              <div className="w-2 h-2 rounded-full bg-info/100"></div>
-              <span className="text-muted">Reservado: turno tomado por un cliente.</span>
-            </div>
-            <div className="flex items-center gap-3 text-sm">
-              <div className="w-2 h-2 rounded-full bg-muted"></div>
-              <span className="text-muted">Completado: turno finalizado.</span>
-            </div>
-            <div className="flex items-center gap-3 text-sm">
-              <div className="w-2 h-2 rounded-full bg-danger"></div>
-              <span className="text-muted">Cancelado: turno cancelado por el cliente.</span>
-            </div>
+            {([
+              ['available', 'listo para reservar.'],
+              ['booked', 'turno tomado por un cliente.'],
+              ['completed', 'turno finalizado.'],
+              ['cancelled', 'turno cancelado.'],
+              ['blocked', 'fuera de circulación (feriado o vacaciones).'],
+            ] as const).map(([estado, desc]) => {
+              const meta = STATUS_META[estado];
+              return (
+                <div key={estado} className="flex items-start gap-3 text-sm">
+                  <meta.Icon size={14} className="shrink-0 mt-0.5 text-muted" />
+                  <span className="text-muted"><span className="text-ink font-medium">{meta.label}:</span> {desc}</span>
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>}
