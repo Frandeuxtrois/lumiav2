@@ -116,6 +116,42 @@ export const appointmentService = {
     if (!data || data.length !== 1) throw new StaleWriteError('No se pudo eliminar el turno: puede que ya no exista.');
   },
 
+  // Reprogramar: toma primero el horario nuevo y recien despues libera el viejo.
+  // En ese orden, si el nuevo ya fue tomado por otro, el cliente conserva el que tenia.
+  async rescheduleAppointment(oldId: string, newSlotId: string) {
+    const { data: original, error: readError } = await supabase
+      .from('appointments')
+      .select('name, email, phone, notes')
+      .eq('id', oldId)
+      .eq('status', 'booked')
+      .maybeSingle();
+
+    if (readError) throw readError;
+    if (!original) throw new StaleWriteError('El turno original ya no figura como reservado.');
+
+    const { data: tomado, error: bookError } = await supabase
+      .from('appointments')
+      .update({ ...original, status: 'booked' })
+      .eq('id', newSlotId)
+      .eq('status', 'available')
+      .select('id');
+
+    if (bookError) throw bookError;
+    if (!tomado || tomado.length !== 1) throw new SlotTakenError();
+
+    const { error: freeError } = await supabase
+      .from('appointments')
+      .update({ status: 'available', name: null, email: null, phone: null, notes: null })
+      .eq('id', oldId)
+      .eq('status', 'booked');
+
+    // Si esto fallara quedarian dos turnos a nombre del cliente. Es preferible a
+    // perderle el turno, y queda visible en el panel para resolver a mano.
+    if (freeError) {
+      console.error('[reschedule] no se pudo liberar el turno original', freeError);
+    }
+  },
+
   async cancelBookedSlot(id: string) {
     const { data, error } = await supabase
       .from('appointments')
