@@ -62,8 +62,9 @@ El estado del servidor se maneja con llamadas directas al SDK de Supabase y `use
 │       ├── BookingForm.tsx       # Datos del cliente
 │       ├── CancelAppointment.tsx # Cancelación por link (/cancelar?id=)
 │       ├── ProfileCard.tsx       # Tarjeta de presentación
-│       ├── AdminDashboard.tsx    # Panel: vista día y semana
+│       ├── AdminDashboard.tsx    # Panel: vistas día, semana y mes
 │       ├── WeekView.tsx          # Vista semanal del panel
+│       ├── MonthView.tsx         # Vista mes + bloqueo de días por selección
 │       ├── CreateSlotsModal.tsx  # Alta de horarios (3 modos)
 │       ├── GmailSetup.tsx        # Wizard de conexión con Gmail
 │       ├── ChangePassword.tsx    # Cambio de contraseña
@@ -78,7 +79,9 @@ El estado del servidor se maneja con llamadas directas al SDK de Supabase y `use
 │   └── migrations/
 │       ├── 001_appointments_and_settings.sql
 │       ├── 002_profile_storage_bucket.sql
-│       └── 003_cron_send_reminders.sql
+│       ├── 003_cron_send_reminders.sql
+│       ├── 004_anon_read_business_name.sql
+│       └── 005_blocked_status.sql
 ├── .env                          # Local, ignorado por git
 ├── vercel.json                   # Rewrites SPA
 └── vite.config.ts
@@ -90,9 +93,11 @@ El estado del servidor se maneja con llamadas directas al SDK de Supabase y `use
 
 **`SlotSelector.tsx`** — Horarios de la fecha elegida. Los ocupados se muestran deshabilitados.
 
-**`CancelAppointment.tsx`** — Página del link de cancelación. Valida el límite de horas (`CANCEL_HOURS_LIMIT`, default 48). Al cancelar devuelve el slot a `available` y borra los datos del cliente.
+**`CancelAppointment.tsx`** — Página del link del email. Ofrece **reprogramar** o **cancelar**, ambas sujetas al límite de horas (`CANCEL_HOURS_LIMIT`, default 48). Al cancelar devuelve el slot a `available` y borra los datos del cliente. Al reprogramar toma primero el horario nuevo y recién después libera el viejo, para que una carrera con otro cliente no lo deje sin turno.
 
-**`AdminDashboard.tsx`** — Vista día (lista filtrable) y vista semana. Marcar completado, eliminar, y accesos a los modales de configuración.
+**`MonthView.tsx`** — Mes completo con el resumen de cada día. Clic para seleccionar, shift+clic para un rango, doble clic para abrir ese día. Desde ahí se bloquean o se abren varios días de una. Nunca toca turnos ya reservados: esos se cancelan a mano para que el cliente reciba el aviso.
+
+**`AdminDashboard.tsx`** — Vistas día, semana y mes. Marcar completado, eliminar, y accesos a los modales de configuración.
 
 **`CreateSlotsModal.tsx`** — Tres modos:
 - **Individual:** una fecha y una hora
@@ -116,7 +121,7 @@ Cada fila es un slot horario. Los datos del cliente viven en la misma fila y que
 | `id` | UUID | PK |
 | `date` | DATE | `YYYY-MM-DD` |
 | `time` | TIME | `HH:MM` |
-| `status` | TEXT | `available` / `booked` / `completed` / `cancelled` |
+| `status` | TEXT | `available` / `booked` / `completed` / `cancelled` / `blocked` |
 | `name`, `email`, `phone`, `notes` | TEXT | Datos del cliente, null si libre |
 | `reminder_24h_sent` | BOOLEAN | Evita reenviar el recordatorio de 24h |
 | `reminder_2h_sent` | BOOLEAN | Ídem para el de 2h |
@@ -150,7 +155,7 @@ El calendario público necesita ver los turnos ocupados para marcar los días ll
 | storage.objects | `anon_read_profile_objects` | anon | SELECT bucket `profile` |
 | storage.objects | `authenticated_manage_profile_photo` | authenticated | ALL bucket `profile` |
 
-Todo esto está en `001`, `002` y `004`. No editar a mano desde el dashboard: si cambia, actualizar la migración.
+Todo esto está en `001`, `002` y `004`. El estado `blocked` lo agrega `005`. No editar a mano desde el dashboard: si cambia, actualizar la migración.
 
 ---
 
@@ -232,7 +237,7 @@ Las fechas se interpretan en `America/Argentina/Buenos_Aires` (UTC-3, hardcodead
     └── Aviso al titular
         └── Si el email falla, la reserva igual queda hecha y se avisa en pantalla
 
-/cancelar?id=xxx
+/cancelar?id=xxx  (reprogramar o cancelar)
 ├── Valida que falten más de 48 hs
 └── Cancela → slot vuelve a "available", se borran los datos, se notifica
 ```
@@ -243,7 +248,8 @@ Las fechas se interpretan en `America/Argentina/Buenos_Aires` (UTC-3, hardcodead
 /login → /admin
 
 /admin
-├── Vista día (lista filtrable) o vista semana
+├── Vista día, semana o mes
+├── Bloquear o abrir días (feriados, vacaciones) desde la vista mes
 ├── Marcar completado / eliminar (si estaba reservado, notifica al cliente)
 ├── "Nuevo Horario"      → individual / rango / período
 ├── "Foto de Perfil"     → sube a Storage
