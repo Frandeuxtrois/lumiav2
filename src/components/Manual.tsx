@@ -128,7 +128,7 @@ export const Manual: React.FC<Props> = ({ onClose }) => (
           <p className="mb-3">Bloquear <strong className="text-ink">no borra</strong> los horarios: los saca de circulación para que nadie pueda reservarlos, y los podés devolver cuando quieras.</p>
           <p className="mb-2 font-semibold text-ink">La forma principal: el botón "Bloquear período"</p>
           <p className="mb-3">Está arriba a la derecha, al lado de "Nuevo Horario", y sirve en cualquier vista. Se abre una ventanita donde ponés <strong className="text-ink">desde qué día hasta qué día</strong> no atendés. Te sirve para cualquier tramo: te vas un lunes 14 y volvés un jueves 24, ponés esas dos fechas y listo.</p>
-          <p className="mb-3">Arriba tenés cuatro atajos que te llenan las fechas solos: <strong className="text-ink">Este día</strong>, <strong className="text-ink">Esta semana</strong>, <strong className="text-ink">Este mes</strong> y el mes que viene por su nombre. Después podés retocar las fechas a mano si no cierra justo.</p>
+          <p className="mb-3">Arriba tenés tres atajos que te llenan las fechas solos: <strong className="text-ink">Este día</strong>, <strong className="text-ink">Esta semana</strong> y <strong className="text-ink">Este mes</strong>. Después podés retocar las fechas a mano si no cierra justo.</p>
           <p className="mb-3">Antes de confirmar te muestra cuántos días agarra, cuántos horarios libres va a bloquear y cuántos ya estaban bloqueados. El botón <strong className="text-ink">"Abrir"</strong> hace lo contrario: devuelve a disponibles todo lo que estaba bloqueado en ese período.</p>
 
           <p className="mb-2 mt-4 font-semibold text-ink">Atajos si ya estás mirando la agenda</p>

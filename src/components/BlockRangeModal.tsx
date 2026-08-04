@@ -1,7 +1,7 @@
 import React from 'react';
 import {
   format, parseISO, startOfWeek, endOfWeek, startOfMonth, endOfMonth,
-  addMonths, differenceInCalendarDays,
+  differenceInCalendarDays,
 } from 'date-fns';
 import { es } from 'date-fns/locale';
 import { Ban, RotateCcw, AlertTriangle } from 'lucide-react';
@@ -18,15 +18,11 @@ interface Props {
 
 const fmt = (d: Date) => format(d, 'yyyy-MM-dd');
 
-const atajos = (base: Date) => {
-  const mesQueViene = addMonths(base, 1);
-  return [
-    { label: 'Este día', from: fmt(base), to: fmt(base) },
-    { label: 'Esta semana', from: fmt(startOfWeek(base, { weekStartsOn: 1 })), to: fmt(endOfWeek(base, { weekStartsOn: 1 })) },
-    { label: 'Este mes', from: fmt(startOfMonth(base)), to: fmt(endOfMonth(base)) },
-    { label: format(mesQueViene, 'MMMM', { locale: es }), from: fmt(startOfMonth(mesQueViene)), to: fmt(endOfMonth(mesQueViene)) },
-  ];
-};
+const atajos = (base: Date) => [
+  { label: 'Este día', from: fmt(base), to: fmt(base) },
+  { label: 'Esta semana', from: fmt(startOfWeek(base, { weekStartsOn: 1 })), to: fmt(endOfWeek(base, { weekStartsOn: 1 })) },
+  { label: 'Este mes', from: fmt(startOfMonth(base)), to: fmt(endOfMonth(base)) },
+];
 
 export const BlockRangeModal: React.FC<Props> = ({ appointments, desdeInicial, onClose, onDone }) => {
   const [from, setFrom] = React.useState(desdeInicial);
