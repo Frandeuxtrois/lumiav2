@@ -10,6 +10,7 @@ import { CreateSlotsModal } from './CreateSlotsModal';
 import { PhotoUpload } from './PhotoUpload';
 import { ConfirmModal } from './ConfirmModal';
 import { WeekView } from './WeekView';
+import { MonthView } from './MonthView';
 import { Manual } from './Manual';
 
 export const AdminDashboard: React.FC = () => {
@@ -22,7 +23,7 @@ export const AdminDashboard: React.FC = () => {
   const [showPhotoUpload, setShowPhotoUpload] = React.useState(false);
   const [confirmDelete, setConfirmDelete] = React.useState<{ id: string; status: string; name?: string; email?: string; date?: string; time?: string } | null>(null);
   const [errorMsg, setErrorMsg] = React.useState<string | null>(null);
-  const [view, setView] = React.useState<'day' | 'week'>('day');
+  const [view, setView] = React.useState<'day' | 'week' | 'month'>('day');
   const [showManual, setShowManual] = React.useState(false);
 
   const loadAppointments = React.useCallback(async () => {
@@ -44,26 +45,28 @@ export const AdminDashboard: React.FC = () => {
   const [blocking, setBlocking] = React.useState(false);
   const dayIsBlocked = appointments.some(a => a.date === filterDate && a.status === 'blocked');
 
-  const handleToggleBlock = async () => {
+  const cambiarBloqueo = async (dates: string[], bloquear: boolean) => {
     setBlocking(true);
     setErrorMsg(null);
     try {
-      const afectados = dayIsBlocked
-        ? await appointmentService.unblockDay(filterDate)
-        : await appointmentService.blockDay(filterDate);
+      const afectados = bloquear
+        ? await appointmentService.blockDays(dates)
+        : await appointmentService.unblockDays(dates);
 
       if (afectados === 0) {
-        setErrorMsg(dayIsBlocked
-          ? 'No había horarios bloqueados en este día.'
-          : 'No hay horarios libres para bloquear en este día.');
+        setErrorMsg(bloquear
+          ? 'No había horarios libres para bloquear en esos días.'
+          : 'No había horarios bloqueados para abrir en esos días.');
       }
       loadAppointments();
     } catch (err) {
-      setErrorMsg(err instanceof Error ? err.message : 'No se pudo cambiar el bloqueo del día.');
+      setErrorMsg(err instanceof Error ? err.message : 'No se pudo cambiar el bloqueo.');
     } finally {
       setBlocking(false);
     }
   };
+
+  const handleToggleBlock = () => cambiarBloqueo([filterDate], !dayIsBlocked);
 
   const handleStatusChange = async (id: string, status: AppointmentStatus) => {
     try {
@@ -133,7 +136,7 @@ export const AdminDashboard: React.FC = () => {
         <div className="flex gap-2 items-center flex-wrap">
           {/* Tabs */}
           <div className="flex bg-elevated p-1 rounded-awd">
-            {(['day', 'week'] as const).map(v => (
+            {(['day', 'week', 'month'] as const).map(v => (
               <button
                 key={v}
                 onClick={() => setView(v)}
@@ -142,7 +145,7 @@ export const AdminDashboard: React.FC = () => {
                   view === v ? 'bg-surface text-ink shadow-sm' : 'text-muted hover:text-ink'
                 )}
               >
-                {v === 'day' ? 'Día' : 'Semana'}
+                {v === 'day' ? 'Día' : v === 'week' ? 'Semana' : 'Mes'}
               </button>
             ))}
           </div>
@@ -174,7 +177,18 @@ export const AdminDashboard: React.FC = () => {
       </div>
 
       {/* Main content */}
-      {view === 'week' ? (
+      {view === 'month' ? (
+        <div className="col-span-12 bg-surface rounded-awd shadow-sm border border-line p-6">
+          <MonthView
+            appointments={appointments}
+            loading={loading}
+            working={blocking}
+            onBlockDays={dates => cambiarBloqueo(dates, true)}
+            onUnblockDays={dates => cambiarBloqueo(dates, false)}
+            onOpenDay={date => { setFilterDate(date); setView('day'); }}
+          />
+        </div>
+      ) : view === 'week' ? (
         <div className="col-span-12 bg-surface rounded-awd shadow-sm border border-line p-6">
           <WeekView
             appointments={appointments}

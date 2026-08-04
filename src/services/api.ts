@@ -130,11 +130,12 @@ export const appointmentService = {
 
   // Bloquear no borra los slots: los saca de circulacion y se pueden devolver.
   // Solo toca los libres — un turno ya reservado se cancela a mano y avisa al cliente.
-  async blockDay(date: string) {
+  async blockDays(dates: string[]) {
+    if (dates.length === 0) return 0;
     const { data, error } = await supabase
       .from('appointments')
       .update({ status: 'blocked' })
-      .eq('date', date)
+      .in('date', dates)
       .eq('status', 'available')
       .select('id');
 
@@ -142,11 +143,12 @@ export const appointmentService = {
     return data?.length ?? 0;
   },
 
-  async unblockDay(date: string) {
+  async unblockDays(dates: string[]) {
+    if (dates.length === 0) return 0;
     const { data, error } = await supabase
       .from('appointments')
       .update({ status: 'available' })
-      .eq('date', date)
+      .in('date', dates)
       .eq('status', 'blocked')
       .select('id');
 
