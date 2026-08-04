@@ -19,9 +19,9 @@ interface Props {
 const fmt = (d: Date) => format(d, 'yyyy-MM-dd');
 
 const atajos = (base: Date) => [
-  { label: 'Este día', from: fmt(base), to: fmt(base) },
-  { label: 'Esta semana', from: fmt(startOfWeek(base, { weekStartsOn: 1 })), to: fmt(endOfWeek(base, { weekStartsOn: 1 })) },
-  { label: 'Este mes', from: fmt(startOfMonth(base)), to: fmt(endOfMonth(base)) },
+  { label: 'Día', from: fmt(base), to: fmt(base) },
+  { label: 'Semana', from: fmt(startOfWeek(base, { weekStartsOn: 1 })), to: fmt(endOfWeek(base, { weekStartsOn: 1 })) },
+  { label: 'Mes', from: fmt(startOfMonth(base)), to: fmt(endOfMonth(base)) },
 ];
 
 export const BlockRangeModal: React.FC<Props> = ({ appointments, desdeInicial, onClose, onDone }) => {
