@@ -48,9 +48,12 @@ El estado del servidor se maneja con llamadas directas al SDK de Supabase y `use
 │   ├── App.tsx                   # Routing, sesion y flujo de reserva del cliente
 │   ├── main.tsx                  # Entry point
 │   ├── types.ts                  # Appointment, AppointmentStatus
-│   ├── index.css                 # Variables de tema (colores, fuente)
+│   ├── index.css                 # Design system AWD: tokens light/dark, utilidades
 │   ├── lib/
 │   │   ├── supabase.ts           # Cliente singleton + flag supabaseReady
+│   │   ├── useTheme.ts           # Modo claro/oscuro (default dark, localStorage)
+│   │   ├── useBusinessName.ts    # Lee settings.business_name con cache
+│   │   ├── statusMeta.ts         # Label + icono + chip por estado
 │   │   └── utils.ts              # formatTime(), formatDate(), cn()
 │   ├── services/
 │   │   └── api.ts                # appointmentService + emailService
@@ -81,7 +84,9 @@ El estado del servidor se maneja con llamadas directas al SDK de Supabase y `use
 │       ├── 002_profile_storage_bucket.sql
 │       ├── 003_cron_send_reminders.sql
 │       ├── 004_anon_read_business_name.sql
-│       └── 005_blocked_status.sql
+│       ├── 005_blocked_status.sql
+│       ├── 006_clientes_y_reservas.sql
+│       └── 007_trigger_registro_reservas.sql
 ├── .env                          # Local, ignorado por git
 ├── vercel.json                   # Rewrites SPA
 └── vite.config.ts
@@ -106,7 +111,7 @@ El estado del servidor se maneja con llamadas directas al SDK de Supabase y `use
 
 **`GmailSetup.tsx`** — Wizard de 5 pasos para obtener una Contraseña de Aplicación de Google y guardarla en `settings`.
 
-**`Manual.tsx`** — Manual de uso accesible desde el panel.
+**`Manual.tsx`** — Manual de uso para el titular, accesible desde el panel. Cubre las tres vistas, el bloqueo de días, los estados, reprogramación y cancelación, recordatorios, comentarios del cliente, historial, Gmail, foto, contraseña y modo claro/oscuro. Los chips de estado salen de `statusMeta.ts`, así que no se desincronizan del panel. Si se agrega una función al panel, actualizarlo acá también.
 
 ---
 
@@ -140,6 +145,43 @@ Configuración key/value que se edita desde el panel.
 | `profile_photo` | URL pública de la foto |
 | `business_name` | Nombre del negocio. Alimenta header, pestaña, mails y `.ics`. Si falta, se usa "Turnos" |
 
+### `clientes` y `reservas`
+
+`appointments` es la grilla de horarios: la fila se recicla cuando el turno se libera. Por eso el cliente y su historial viven aparte — si no, cancelar borraba todo rastro de que esa persona había existido.
+
+**`clientes`** — una fila por persona, agrupada por `email` (`clientes_email_unico`). Si el mismo email vuelve a reservar, se actualizan nombre y teléfono en vez de duplicar.
+
+| Campo | Tipo | Notas |
+|---|---|---|
+| `id` | UUID | PK |
+| `nombre`, `email` | TEXT | `email` único, se guarda en minúsculas y sin espacios |
+| `telefono`, `notas` | TEXT | Opcionales. `notas` es para el titular, no lo escribe el cliente |
+| `created_at`, `updated_at` | TIMESTAMPTZ | |
+
+**`reservas`** — una fila por visita. `appointment_id` es `on delete set null`: si el slot se borra, la visita sigue en el historial.
+
+| Campo | Tipo | Notas |
+|---|---|---|
+| `cliente_id` | UUID | FK → clientes, `on delete cascade` |
+| `appointment_id` | UUID | FK → appointments, `on delete set null` |
+| `fecha`, `hora` | DATE / TIME | Copiados del slot, sobreviven a su borrado |
+| `comentario` | TEXT | Lo que escribió el cliente al reservar |
+| `estado` | TEXT | `confirmada` / `cancelada_cliente` / `cancelada_negocio` / `completada` / `ausente` |
+
+### Triggers de historial
+
+`007` engancha un trigger `security definer` sobre `appointments` que mantiene las dos tablas sin que el front tenga que saber nada:
+
+| Cambio en `appointments` | Efecto |
+|---|---|
+| pasa a `booked` | Alta o actualización del cliente (upsert por email) + nueva `reserva` en `confirmada` |
+| `booked` → `available` | La reserva pasa a `cancelada_cliente` |
+| pasa a `completed` | La reserva pasa a `completada` |
+
+Anon no tiene ningún permiso sobre estas tablas: escribe el trigger, no el navegador. Solo el titular logueado las lee.
+
+> Los datos ya se acumulan desde la primera reserva, pero **todavía no hay pantalla en el panel** para ver la ficha de un cliente y su historial. Es lo que queda pendiente.
+
 ### RLS
 
 El calendario público necesita ver los turnos ocupados para marcar los días llenos, por eso anon lee tanto `available` como `booked` — pero nunca los datos personales de otro cliente más allá de lo que expone la fila.
@@ -154,8 +196,10 @@ El calendario público necesita ver los turnos ocupados para marcar los días ll
 | settings | `authenticated_full_access_settings` | authenticated | ALL |
 | storage.objects | `anon_read_profile_objects` | anon | SELECT bucket `profile` |
 | storage.objects | `authenticated_manage_profile_photo` | authenticated | ALL bucket `profile` |
+| clientes | `authenticated_full_access_clientes` | authenticated | ALL (anon revocado) |
+| reservas | `authenticated_full_access_reservas` | authenticated | ALL (anon revocado) |
 
-Todo esto está en `001`, `002` y `004`. El estado `blocked` lo agrega `005`. No editar a mano desde el dashboard: si cambia, actualizar la migración.
+Todo esto está en `001`, `002` y `004`. El estado `blocked` lo agrega `005`; `clientes` y `reservas` con sus policies, `006`. No editar a mano desde el dashboard: si cambia, actualizar la migración.
 
 ---
 
@@ -199,6 +243,8 @@ Las tres leen las credenciales de Gmail desde `settings` usando la service_role 
 | `send-cancellation` | Al cancelar, desde el link o desde el panel | Notifica a la contraparte con un `.ics` `METHOD:CANCEL` que borra el evento del calendario |
 | `send-reminders` | Cron cada 30 min | Recordatorio a los turnos que caen en la ventana de 24h o 2h, y marca el flag para no repetir |
 
+> **Falta:** reprogramar no dispara ningún email. El cambio queda hecho en la base y visible en el panel, pero ni el cliente ni el titular reciben confirmación del horario nuevo, y el `.ics` viejo sigue en el calendario del cliente. Requiere una función nueva o extender `send-confirmation` con un modo "reprogramado".
+
 Los `.ics` usan `UID:<appointmentId>@turnosawd`. El UID debe coincidir entre confirmación y cancelación, si no el evento no se borra del calendario del cliente.
 
 Para actualizar una función: Supabase → Edge Functions → seleccionar → pegar el contenido del archivo → Deploy.
@@ -233,13 +279,19 @@ Las fechas se interpretan en `America/Argentina/Buenos_Aires` (UTC-3, hardcodead
 ├── Elige fecha → horario → completa sus datos
 └── Confirma
     ├── Slot pasa a "booked"
+    ├── El trigger registra al cliente y la reserva en su historial
     ├── Email al cliente con .ics y link de cancelación
-    └── Aviso al titular
+    └── Aviso al titular (con teléfono y comentario)
         └── Si el email falla, la reserva igual queda hecha y se avisa en pantalla
 
-/cancelar?id=xxx  (reprogramar o cancelar)
-├── Valida que falten más de 48 hs
-└── Cancela → slot vuelve a "available", se borran los datos, se notifica
+/cancelar?id=xxx
+├── Valida que falten más de 48 hs (si no, corta y le pide contactar al titular)
+├── Reprogramar → elige otra fecha y horario libre
+│   ├── Toma primero el nuevo, después libera el viejo
+│   ├── Si perdió la carrera: conserva el original y elige otro
+│   └── No dispara ningún email (pendiente)
+└── Cancelar → slot vuelve a "available", se limpian los datos del slot,
+    se notifica al titular y la reserva queda "cancelada_cliente"
 ```
 
 ## Flujo del administrador
@@ -249,7 +301,9 @@ Las fechas se interpretan en `America/Argentina/Buenos_Aires` (UTC-3, hardcodead
 
 /admin
 ├── Vista día, semana o mes
-├── Bloquear o abrir días (feriados, vacaciones) desde la vista mes
+├── Bloquear o abrir el día seleccionado (vista día)
+├── Bloquear o abrir varios días: clic, shift+clic para rango,
+│   doble clic para abrir ese día (vista mes)
 ├── Marcar completado / eliminar (si estaba reservado, notifica al cliente)
 ├── "Nuevo Horario"      → individual / rango / período
 ├── "Foto de Perfil"     → sube a Storage
@@ -265,8 +319,8 @@ Las fechas se interpretan en `America/Argentina/Buenos_Aires` (UTC-3, hardcodead
 ### 1. Supabase
 
 1. Crear proyecto nuevo (región `sa-east-1` para Argentina).
-2. SQL Editor → correr `001_appointments_and_settings.sql`.
-3. SQL Editor → correr `002_profile_storage_bucket.sql`.
+2. SQL Editor → correr las migraciones en orden: `001`, `002`, `004`, `005`, `006`, `007`. (`003` va al final, ver punto 8.)
+3. SQL Editor → cargar `business_name` en `settings` con el nombre del negocio.
 4. Authentication → Users → Add user: crear la cuenta del titular con su contraseña.
 5. **Authentication → Providers → Email → desactivar "Enable email signup".** Sin esto cualquiera puede registrarse y entrar al panel, porque el panel solo verifica que haya sesión iniciada.
 6. Edge Functions → deployar `send-confirmation`, `send-cancellation` y `send-reminders` con `verify_jwt` activado.
@@ -295,13 +349,14 @@ Las fechas se interpretan en `America/Argentina/Buenos_Aires` (UTC-3, hardcodead
 
 ## Personalizar por cliente
 
+Lo que cambia por cliente **no se toca en el código**: el nombre del negocio sale de `settings.business_name` y alimenta la navbar, el título de la pestaña, la tarjeta de presentación, los emails y los `.ics`. Se edita desde el panel.
+
+Lo que sí vive en el código:
+
 | Qué | Dónde |
 |---|---|
-| Título de la pestaña | `index.html` |
-| Nombre en la navbar | `src/components/Layout.tsx` |
-| Nombre y especialidad | `src/components/ProfileCard.tsx` |
-| Colores | `src/index.css` → `--color-primary`, `--color-primary-hover` |
-| Horas mínimas para cancelar | `src/components/CancelAppointment.tsx` → `CANCEL_HOURS_LIMIT` |
+| Colores y tipografías | `src/index.css` → tokens de `:root` y `body.dark-mode` |
+| Horas mínimas para cancelar o reprogramar | `src/components/CancelAppointment.tsx` → `CANCEL_HOURS_LIMIT` |
 | Textos y asuntos de los emails | `supabase/functions/*/index.ts` |
 | Nombre del remitente y del evento | `supabase/functions/*/index.ts` → `from:`, `SUMMARY:`, `ORGANIZER:` |
 | Zona horaria | `supabase/functions/send-reminders/index.ts` y los `.ics` |
@@ -310,15 +365,16 @@ Las fechas se interpretan en `America/Argentina/Buenos_Aires` (UTC-3, hardcodead
 
 ```
 [ ] Proyecto Supabase creado
-[ ] 001 y 002 ejecutados
+[ ] Migraciones 001, 002, 004, 005, 006 y 007 ejecutadas
+[ ] business_name cargado en settings
 [ ] Usuario admin creado
 [ ] Signup público desactivado
 [ ] 3 Edge Functions deployadas
 [ ] Secret APP_URL cargado
 [ ] 003 ejecutado (Vault + cron)
 [ ] Proyecto Vercel con las 2 variables
-[ ] APP_URL actualizado con el dominio final
-[ ] Textos e identidad personalizados
+[ ] APP_URL actualizado con el dominio final (sin barra al final)
 [ ] Foto y Gmail cargados desde el panel
-[ ] Prueba end-to-end: reserva, .ics, cancelación y recordatorios
+[ ] Prueba end-to-end: reserva, .ics, reprogramación, cancelación y recordatorios
+[ ] Doble reserva probada con dos navegadores en el mismo horario
 ```
