@@ -9,6 +9,7 @@ import { ChangePassword } from './ChangePassword';
 import { CreateSlotsModal } from './CreateSlotsModal';
 import { PhotoUpload } from './PhotoUpload';
 import { ConfirmModal } from './ConfirmModal';
+import { BlockRangeModal } from './BlockRangeModal';
 import { STATUS_META } from '../lib/statusMeta';
 import { WeekView } from './WeekView';
 import { MonthView } from './MonthView';
@@ -24,8 +25,10 @@ export const AdminDashboard: React.FC = () => {
   const [showPhotoUpload, setShowPhotoUpload] = React.useState(false);
   const [confirmDelete, setConfirmDelete] = React.useState<{ id: string; status: string; name?: string; email?: string; date?: string; time?: string } | null>(null);
   const [errorMsg, setErrorMsg] = React.useState<string | null>(null);
+  const [okMsg, setOkMsg] = React.useState<string | null>(null);
   const [view, setView] = React.useState<'day' | 'week' | 'month'>('day');
   const [showManual, setShowManual] = React.useState(false);
+  const [showBlockRange, setShowBlockRange] = React.useState(false);
 
   const loadAppointments = React.useCallback(async () => {
     setLoading(true);
@@ -43,8 +46,14 @@ export const AdminDashboard: React.FC = () => {
     loadAppointments();
   }, [loadAppointments]);
 
+  // El aviso de exito se va solo; el de error se cierra a mano para que no se pase por alto.
+  React.useEffect(() => {
+    if (!okMsg) return;
+    const t = setTimeout(() => setOkMsg(null), 4000);
+    return () => clearTimeout(t);
+  }, [okMsg]);
+
   const [blocking, setBlocking] = React.useState(false);
-  const dayIsBlocked = appointments.some(a => a.date === filterDate && a.status === 'blocked');
 
   const cambiarBloqueo = async (dates: string[], bloquear: boolean) => {
     setBlocking(true);
@@ -58,6 +67,8 @@ export const AdminDashboard: React.FC = () => {
         setErrorMsg(bloquear
           ? 'No había horarios libres para bloquear en esos días.'
           : 'No había horarios bloqueados para abrir en esos días.');
+      } else {
+        setOkMsg(`${afectados} horario(s) ${bloquear ? 'bloqueado(s)' : 'abierto(s)'}.`);
       }
       loadAppointments();
     } catch (err) {
@@ -66,8 +77,6 @@ export const AdminDashboard: React.FC = () => {
       setBlocking(false);
     }
   };
-
-  const handleToggleBlock = () => cambiarBloqueo([filterDate], !dayIsBlocked);
 
   const handleStatusChange = async (id: string, status: AppointmentStatus) => {
     try {
@@ -151,23 +160,20 @@ export const AdminDashboard: React.FC = () => {
             ))}
           </div>
           {view === 'day' && (
-            <>
-              <input
-                type="date"
-                value={filterDate}
-                onChange={(e) => setFilterDate(e.target.value)}
-                className="px-3 py-2 border border-line rounded-awd text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
-              />
-              <button
-                onClick={handleToggleBlock}
-                disabled={blocking}
-                className="px-4 py-2 border border-line rounded-awd text-xs font-bold uppercase tracking-widest text-muted hover:text-ink hover:border-muted flex items-center gap-2 transition-colors disabled:opacity-50"
-                title={dayIsBlocked ? 'Devolver los horarios a disponibles' : 'Sacar de circulación los horarios libres de este día'}
-              >
-                <Ban size={14} /> {dayIsBlocked ? 'Desbloquear día' : 'Bloquear día'}
-              </button>
-            </>
+            <input
+              type="date"
+              value={filterDate}
+              onChange={(e) => setFilterDate(e.target.value)}
+              className="px-3 py-2 border border-line rounded-awd text-sm focus:outline-none focus:ring-2 focus:ring-primary/20"
+            />
           )}
+          <button
+            onClick={() => setShowBlockRange(true)}
+            className="px-4 py-2 border border-line rounded-awd text-xs font-bold uppercase tracking-widest text-muted hover:text-ink hover:border-muted flex items-center gap-2 transition-colors"
+            title="Bloquear o abrir un período: un día, una semana, un mes o un rango a medida"
+          >
+            <Ban size={14} /> Bloquear período
+          </button>
           <button
             onClick={() => setShowAddModal(true)}
             className="bg-ink text-white text-xs font-bold uppercase tracking-widest px-4 py-2 rounded-awd flex items-center gap-2 hover:bg-accent transition-colors"
@@ -364,6 +370,29 @@ export const AdminDashboard: React.FC = () => {
 
       {/* Manual */}
       {showManual && <Manual onClose={() => setShowManual(false)} />}
+
+      {/* Bloqueo por período */}
+      {showBlockRange && (
+        <BlockRangeModal
+          appointments={appointments}
+          desdeInicial={filterDate}
+          onClose={() => setShowBlockRange(false)}
+          onDone={(mensaje) => {
+            setShowBlockRange(false);
+            setOkMsg(mensaje);
+            loadAppointments();
+          }}
+        />
+      )}
+
+      {/* Success toast */}
+      {okMsg && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[200] bg-accent text-white text-sm font-medium px-5 py-3 rounded-awd shadow-lg flex items-center gap-3">
+          <CheckCircle size={16} className="shrink-0" />
+          {okMsg}
+          <button onClick={() => setOkMsg(null)} className="text-white/70 hover:text-white text-lg leading-none">×</button>
+        </div>
+      )}
 
       {/* Error toast */}
       {errorMsg && (

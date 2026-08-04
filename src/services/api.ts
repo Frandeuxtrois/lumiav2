@@ -192,6 +192,34 @@ export const appointmentService = {
     return data?.length ?? 0;
   },
 
+  // Igual que blockDays pero por rango continuo: evita mandar una lista de 200
+  // fechas cuando el titular se toma dos meses.
+  async blockRange(from: string, to: string) {
+    const { data, error } = await supabase
+      .from('appointments')
+      .update({ status: 'blocked' })
+      .gte('date', from)
+      .lte('date', to)
+      .eq('status', 'available')
+      .select('id');
+
+    if (error) throw error;
+    return data?.length ?? 0;
+  },
+
+  async unblockRange(from: string, to: string) {
+    const { data, error } = await supabase
+      .from('appointments')
+      .update({ status: 'available' })
+      .gte('date', from)
+      .lte('date', to)
+      .eq('status', 'blocked')
+      .select('id');
+
+    if (error) throw error;
+    return data?.length ?? 0;
+  },
+
   async createSlot(slot: Partial<Appointment>) {
     const { data, error } = await supabase
       .from('appointments')

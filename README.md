@@ -67,7 +67,8 @@ El estado del servidor se maneja con llamadas directas al SDK de Supabase y `use
 │       ├── ProfileCard.tsx       # Tarjeta de presentación
 │       ├── AdminDashboard.tsx    # Panel: vistas día, semana y mes
 │       ├── WeekView.tsx          # Vista semanal del panel
-│       ├── MonthView.tsx         # Vista mes + bloqueo de días por selección
+│       ├── MonthView.tsx         # Vista mes + selección de días y semanas
+│       ├── BlockRangeModal.tsx   # Bloqueo por período desde/hasta
 │       ├── CreateSlotsModal.tsx  # Alta de horarios (3 modos)
 │       ├── GmailSetup.tsx        # Wizard de conexión con Gmail
 │       ├── ChangePassword.tsx    # Cambio de contraseña
@@ -105,6 +106,8 @@ El estado del servidor se maneja con llamadas directas al SDK de Supabase y `use
 **`MonthView.tsx`** — Mes completo con el resumen de cada día. La grilla arranca el lunes de la primera semana y termina el domingo de la última, así cada fila es una semana real: el botón vertical de la izquierda selecciona esa semana entera, incluidos los días que caen en el mes vecino. Además: clic para un día, shift+clic para un rango, doble clic para abrir ese día. Nunca toca turnos ya reservados: esos se cancelan a mano para que el cliente reciba el aviso.
 
 **`AdminDashboard.tsx`** — Vistas día, semana y mes. Marcar completado, eliminar, y accesos a los modales de configuración.
+
+**`BlockRangeModal.tsx`** — Bloqueo por período arbitrario (desde/hasta), disponible desde cualquier vista. Trae atajos para día, semana, mes actual y mes siguiente, pero el rango se edita a mano: unas vacaciones rara vez empiezan un lunes y terminan un domingo. El resumen previo se calcula sobre los `appointments` ya cargados en el panel, sin pegarle de nuevo a la base. Usa `blockRange`/`unblockRange` (`gte`/`lte`) en vez de mandar una lista de fechas.
 
 **`CreateSlotsModal.tsx`** — Tres modos:
 - **Individual:** una fecha y una hora
@@ -303,7 +306,7 @@ Las fechas se interpretan en `America/Argentina/Buenos_Aires` (UTC-3, hardcodead
 
 /admin
 ├── Vista día, semana o mes
-├── Bloquear o abrir el día seleccionado (vista día)
+├── "Bloquear período" → desde/hasta arbitrario, con atajos día/semana/mes
 ├── Bloquear o abrir la semana completa (vista semana)
 ├── Bloquear o abrir por selección: botón "Semana" por fila, clic por día,
 │   shift+clic para rango, doble clic para abrir ese día (vista mes)
