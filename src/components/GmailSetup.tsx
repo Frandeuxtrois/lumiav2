@@ -96,7 +96,7 @@ export const GmailSetup: React.FC<Props> = ({ onComplete }) => {
         <p className="font-mono text-primary font-semibold mb-6">{gmail}</p>
         <button
           onClick={onComplete}
-          className="px-6 py-3 bg-primary text-white rounded-awd font-medium hover:bg-primary-hover transition-colors"
+          className="px-6 py-3 bg-primary text-on-accent rounded-awd font-medium hover:bg-primary-hover transition-colors"
         >
           Volver al panel
         </button>
@@ -175,7 +175,7 @@ export const GmailSetup: React.FC<Props> = ({ onComplete }) => {
             <button
               type="submit"
               disabled={loading}
-              className="flex-1 py-2.5 bg-primary text-white rounded-awd text-sm font-semibold hover:bg-primary-hover disabled:bg-line transition-colors"
+              className="flex-1 py-2.5 bg-primary text-on-accent rounded-awd text-sm font-semibold hover:bg-primary-hover disabled:bg-line transition-colors"
             >
               {loading ? 'Guardando...' : 'Guardar configuración'}
             </button>
@@ -204,7 +204,7 @@ export const GmailSetup: React.FC<Props> = ({ onComplete }) => {
       </div>
 
       {'preview' in step && step.preview && (
-        <div className="bg-ink text-accent font-mono text-lg tracking-[0.3em] text-center py-4 px-6 rounded-awd mb-4">
+        <div className="bg-elevated border border-accent/40 text-ink font-mono text-lg tracking-[0.3em] text-center py-4 px-6 rounded-awd mb-4">
           {step.preview}
         </div>
       )}
@@ -248,7 +248,7 @@ export const GmailSetup: React.FC<Props> = ({ onComplete }) => {
         )}
         <button
           onClick={() => setCurrentStep(s => s + 1)}
-          className="flex-1 py-2.5 bg-primary text-white rounded-awd text-sm font-semibold hover:bg-primary-hover flex items-center justify-center gap-1 transition-colors"
+          className="flex-1 py-2.5 bg-primary text-on-accent rounded-awd text-sm font-semibold hover:bg-primary-hover flex items-center justify-center gap-1 transition-colors"
         >
           {currentStep === STEPS.length - 1 ? 'Ingresar mis datos' : step.tip ?? 'Siguiente'}
           <ChevronRight size={16} />

@@ -67,7 +67,7 @@ export const PhotoUpload: React.FC<Props> = ({ onComplete }) => {
         </div>
         <h3 className="text-xl font-bold mb-2">¡Foto actualizada!</h3>
         <p className="text-muted text-sm mb-6">Ya se muestra en la página de reservas.</p>
-        <button onClick={onComplete} className="px-6 py-2.5 bg-primary text-white rounded-awd text-sm font-semibold hover:bg-primary-hover transition-colors">
+        <button onClick={onComplete} className="px-6 py-2.5 bg-primary text-on-accent rounded-awd text-sm font-semibold hover:bg-primary-hover transition-colors">
           Volver al panel
         </button>
       </div>
@@ -118,7 +118,7 @@ export const PhotoUpload: React.FC<Props> = ({ onComplete }) => {
         <button
           onClick={handleUpload}
           disabled={!file || loading}
-          className="flex-1 py-2.5 bg-primary text-white rounded-awd text-sm font-semibold hover:bg-primary-hover disabled:bg-line transition-colors"
+          className="flex-1 py-2.5 bg-primary text-on-accent rounded-awd text-sm font-semibold hover:bg-primary-hover disabled:bg-line transition-colors"
         >
           {loading ? 'Subiendo...' : 'Guardar foto'}
         </button>

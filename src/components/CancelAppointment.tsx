@@ -260,7 +260,7 @@ export const CancelAppointment: React.FC = () => {
           <button
             onClick={() => { setModo('reprogramar'); setErrorMsg(''); }}
             disabled={!canCancelNow}
-            className="w-full py-3 flex items-center justify-center gap-2 bg-accent text-white rounded-awd font-semibold hover:bg-accent-hover disabled:bg-line disabled:text-muted disabled:cursor-not-allowed transition-colors duration-300"
+            className="w-full py-3 flex items-center justify-center gap-2 bg-accent text-on-accent rounded-awd font-semibold hover:bg-accent-hover disabled:bg-line disabled:text-muted disabled:cursor-not-allowed transition-colors duration-300"
           >
             <CalendarClock size={17} /> Reprogramar turno
           </button>
@@ -326,7 +326,7 @@ export const CancelAppointment: React.FC = () => {
             <button
               onClick={handleReprogramar}
               disabled={!slotElegido || cancelling}
-              className="flex-1 py-2.5 bg-accent text-white rounded-awd text-sm font-semibold hover:bg-accent-hover disabled:bg-line disabled:text-muted disabled:cursor-not-allowed transition-colors duration-300"
+              className="flex-1 py-2.5 bg-accent text-on-accent rounded-awd text-sm font-semibold hover:bg-accent-hover disabled:bg-line disabled:text-muted disabled:cursor-not-allowed transition-colors duration-300"
             >
               {cancelling ? 'Reprogramando...' : 'Confirmar cambio'}
             </button>

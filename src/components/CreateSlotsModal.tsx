@@ -153,7 +153,7 @@ export const CreateSlotsModal: React.FC<Props> = ({ onClose, onSuccess }) => {
         <p className="text-muted text-sm mb-6">Ya aparecen disponibles para los clientes.</p>
         <button
           onClick={onSuccess}
-          className="px-6 py-2.5 bg-primary text-white rounded-awd text-sm font-semibold hover:bg-primary-hover transition-colors"
+          className="px-6 py-2.5 bg-primary text-on-accent rounded-awd text-sm font-semibold hover:bg-primary-hover transition-colors"
         >
           Listo
         </button>
@@ -237,7 +237,7 @@ export const CreateSlotsModal: React.FC<Props> = ({ onClose, onSuccess }) => {
                   className={cn(
                     'flex-1 py-2 rounded-awd text-xs font-bold border transition-all',
                     rangoDuration === d.value
-                      ? 'bg-primary text-white border-primary'
+                      ? 'bg-primary text-on-accent border-primary'
                       : 'border-line text-muted hover:border-primary/40'
                   )}
                 >
@@ -280,7 +280,7 @@ export const CreateSlotsModal: React.FC<Props> = ({ onClose, onSuccess }) => {
                   className={cn(
                     'flex-1 py-2 rounded-awd text-xs font-bold border transition-all',
                     periodoWeekdays.includes(d.value)
-                      ? 'bg-primary text-white border-primary'
+                      ? 'bg-primary text-on-accent border-primary'
                       : 'border-line text-muted hover:border-primary/40'
                   )}
                 >
@@ -319,7 +319,7 @@ export const CreateSlotsModal: React.FC<Props> = ({ onClose, onSuccess }) => {
                   className={cn(
                     'flex-1 py-2 rounded-awd text-xs font-bold border transition-all',
                     periodoDuration === d.value
-                      ? 'bg-primary text-white border-primary'
+                      ? 'bg-primary text-on-accent border-primary'
                       : 'border-line text-muted hover:border-primary/40'
                   )}
                 >
@@ -368,7 +368,7 @@ export const CreateSlotsModal: React.FC<Props> = ({ onClose, onSuccess }) => {
         <button
           onClick={handleSubmit}
           disabled={loading}
-          className="flex-1 py-2.5 bg-primary text-white rounded-awd text-sm font-semibold hover:bg-primary-hover disabled:bg-line transition-colors"
+          className="flex-1 py-2.5 bg-primary text-on-accent rounded-awd text-sm font-semibold hover:bg-primary-hover disabled:bg-line transition-colors"
         >
           {loading ? 'Creando...' : mode === 'individual' ? 'Crear horario' : 'Crear horarios'}
         </button>

@@ -81,7 +81,7 @@ export const Calendar: React.FC<CalendarProps> = ({ selectedDate, onDateSelect, 
           // Dos estados visibles: hay lugar o no lo hay. "Completo" y "sin turnos
           // cargados" son lo mismo para quien reserva, y separarlos solo confundia.
           const dayClass = (() => {
-            if (isSelected) return 'bg-primary text-white font-bold ring-2 ring-primary ring-offset-1';
+            if (isSelected) return 'bg-primary text-on-accent font-bold ring-2 ring-primary ring-offset-1';
             if (isPast || !isCurrentMonth) return 'text-muted cursor-not-allowed';
             if (status === 'available') return 'bg-primary/10 text-primary font-semibold hover:bg-primary/20';
             return 'text-muted cursor-not-allowed';

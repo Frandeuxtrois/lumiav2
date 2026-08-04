@@ -54,7 +54,7 @@ export const ChangePassword: React.FC<Props> = ({ onComplete }) => {
         <p className="text-muted text-sm mb-6">La próxima vez que inicies sesión usá la nueva contraseña.</p>
         <button
           onClick={onComplete}
-          className="px-6 py-3 bg-primary text-white rounded-awd font-medium hover:bg-primary-hover transition-colors"
+          className="px-6 py-3 bg-primary text-on-accent rounded-awd font-medium hover:bg-primary-hover transition-colors"
         >
           Volver al panel
         </button>
@@ -117,7 +117,7 @@ export const ChangePassword: React.FC<Props> = ({ onComplete }) => {
           <button
             type="submit"
             disabled={loading}
-            className="flex-1 py-2.5 bg-primary text-white rounded-awd text-sm font-semibold hover:bg-primary-hover disabled:bg-line transition-colors"
+            className="flex-1 py-2.5 bg-primary text-on-accent rounded-awd text-sm font-semibold hover:bg-primary-hover disabled:bg-line transition-colors"
           >
             {loading ? 'Guardando...' : 'Cambiar contraseña'}
           </button>

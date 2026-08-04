@@ -82,7 +82,7 @@ export const BookingForm: React.FC<BookingFormProps> = ({ onSubmit, loading }) =
       <button
         type="submit"
         disabled={loading}
-        className="w-full bg-primary text-white font-medium py-3 rounded-awd shadow-lg shadow-awd hover:bg-primary-hover disabled:bg-line disabled:shadow-none transition-all mt-4"
+        className="w-full bg-primary text-on-accent font-medium py-3 rounded-awd shadow-lg shadow-awd hover:bg-primary-hover disabled:bg-line disabled:shadow-none transition-all mt-4"
       >
         {loading ? 'Procesando...' : 'Confirmar Reserva'}
       </button>

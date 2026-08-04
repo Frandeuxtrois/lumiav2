@@ -57,7 +57,7 @@ export const Auth: React.FC = () => {
         </div>
         <button
           disabled={loading}
-          className="w-full bg-primary text-white font-medium py-3 rounded-awd shadow-lg shadow-awd hover:bg-primary-hover disabled:bg-line transition-all mt-4"
+          className="w-full bg-primary text-on-accent font-medium py-3 rounded-awd shadow-lg shadow-awd hover:bg-primary-hover disabled:bg-line transition-all mt-4"
         >
           {loading ? 'Iniciando sesión...' : 'Ingresar'}
         </button>

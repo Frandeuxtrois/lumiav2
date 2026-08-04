@@ -176,7 +176,7 @@ export const AdminDashboard: React.FC = () => {
           </button>
           <button
             onClick={() => setShowAddModal(true)}
-            className="bg-ink text-white text-xs font-bold uppercase tracking-widest px-4 py-2 rounded-awd flex items-center gap-2 hover:bg-accent transition-colors"
+            className="bg-accent text-on-accent text-xs font-bold uppercase tracking-widest px-4 py-2 rounded-awd flex items-center gap-2 hover:bg-accent-hover transition-colors"
           >
             <Plus size={14} /> Nuevo Horario
           </button>
@@ -276,7 +276,7 @@ export const AdminDashboard: React.FC = () => {
 
       {/* Stats Summary & Quick Filter */}
       {view !== 'week' && <div className="col-span-12 lg:col-span-4 flex flex-col gap-4">
-        <div className="bg-primary p-6 rounded-awd border border-white text-white shadow-lg shadow-awd">
+        <div className="bg-primary p-6 rounded-awd border border-accent-hover text-on-accent shadow-lg shadow-awd">
           <p className="text-[10px] font-bold uppercase tracking-widest mb-1 opacity-80">Resumen del día</p>
           <div className="flex items-end justify-between">
             <p className="text-4xl font-bold">{stats.total}</p>
@@ -387,18 +387,18 @@ export const AdminDashboard: React.FC = () => {
 
       {/* Success toast */}
       {okMsg && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[200] bg-accent text-white text-sm font-medium px-5 py-3 rounded-awd shadow-lg flex items-center gap-3">
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[200] bg-accent text-on-accent text-sm font-medium px-5 py-3 rounded-awd shadow-lg flex items-center gap-3">
           <CheckCircle size={16} className="shrink-0" />
           {okMsg}
-          <button onClick={() => setOkMsg(null)} className="text-white/70 hover:text-white text-lg leading-none">×</button>
+          <button onClick={() => setOkMsg(null)} className="text-on-accent/70 hover:text-on-accent text-lg leading-none">×</button>
         </div>
       )}
 
       {/* Error toast */}
       {errorMsg && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[200] bg-danger text-white text-sm font-medium px-5 py-3 rounded-awd shadow-lg flex items-center gap-3">
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-[200] bg-danger text-on-danger text-sm font-medium px-5 py-3 rounded-awd shadow-lg flex items-center gap-3">
           {errorMsg}
-          <button onClick={() => setErrorMsg(null)} className="text-white/70 hover:text-white text-lg leading-none">×</button>
+          <button onClick={() => setErrorMsg(null)} className="text-on-danger/70 hover:text-on-danger text-lg leading-none">×</button>
         </div>
       )}
 

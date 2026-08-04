@@ -157,7 +157,7 @@ export const BlockRangeModal: React.FC<Props> = ({ appointments, desdeInicial, o
           <button
             onClick={() => ejecutar(true)}
             disabled={working || !rangoValido || resumen!.libres === 0}
-            className="flex-1 px-4 py-2.5 rounded-awd bg-ink text-white text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-accent transition-colors disabled:opacity-40 disabled:hover:bg-ink"
+            className="flex-1 px-4 py-2.5 rounded-awd bg-accent text-on-accent text-xs font-bold uppercase tracking-widest flex items-center justify-center gap-2 hover:bg-accent-hover transition-colors disabled:opacity-40 disabled:hover:bg-accent"
           >
             <Ban size={14} /> Bloquear
           </button>

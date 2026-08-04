@@ -119,7 +119,7 @@ const ClientBooking: React.FC = () => {
         )}
         <button
           onClick={() => { setStep(1); setSelectedSlotId(null); setBookedSlot(null); setEmailWarning(null); fetchSlots(); }}
-          className="w-full py-3 bg-primary text-white rounded-awd font-medium hover:bg-primary-hover transition-colors"
+          className="w-full py-3 bg-primary text-on-accent rounded-awd font-medium hover:bg-primary-hover transition-colors"
         >
           Volver al Inicio
         </button>
@@ -161,7 +161,7 @@ const ClientBooking: React.FC = () => {
           <button 
             disabled={!selectedSlotId}
             onClick={() => setStep(2)}
-            className="w-full bg-primary text-white font-medium py-3 rounded-awd shadow-lg shadow-awd hover:bg-primary-hover disabled:bg-line disabled:shadow-none transition-all mt-8"
+            className="w-full bg-primary text-on-accent font-medium py-3 rounded-awd shadow-lg shadow-awd hover:bg-primary-hover disabled:bg-line disabled:shadow-none transition-all mt-8"
           >
             Continuar Reserva
           </button>

@@ -14,6 +14,10 @@
   --muted:       #276E90;
   --accent:      #4F7368;
   --accent-hover:#3E5C53;
+  /* Texto que va ENCIMA de accent/danger. No es siempre blanco: en dark los dos
+     colores se aclaran para separarse del fondo, y ahi el blanco no contrasta. */
+  --on-accent:   #ffffff;
+  --on-danger:   #ffffff;
   --danger:      #B3453F;
   --warning:     #9A6B1F;
   --info:        #276E90;
@@ -32,6 +36,8 @@ body.dark-mode {
   /* Verde levantado: el #4F7368 del tema claro pierde contraste sobre near-black. */
   --accent:      #5FA88F;
   --accent-hover:#4E9179;
+  --on-accent:   #08130F;
+  --on-danger:   #1A0908;
   /* Rojo reservado a acciones destructivas, nunca como color de marca. */
   --danger:      #EE6B66;
   --warning:     #D9A441;
@@ -53,6 +59,8 @@ body.dark-mode {
   --color-muted:        var(--muted);
   --color-accent:       var(--accent);
   --color-accent-hover: var(--accent-hover);
+  --color-on-accent:    var(--on-accent);
+  --color-on-danger:    var(--on-danger);
   --color-danger:       var(--danger);
   --color-warning:      var(--warning);
   --color-info:         var(--info);
