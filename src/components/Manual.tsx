@@ -2,7 +2,7 @@ import React from 'react';
 import {
   X, CalendarDays, Mail, Lock, Image, CheckCircle2, Trash2, CalendarRange,
   HelpCircle, Users, XCircle, Bell, Ban, CalendarClock, Moon, MessageSquare,
-  AlertTriangle, MousePointerClick,
+  AlertTriangle, MousePointerClick, Store,
 } from 'lucide-react';
 import { STATUS_META } from '../lib/statusMeta';
 import { AppointmentStatus } from '../types';
@@ -239,6 +239,25 @@ export const Manual: React.FC<Props> = ({ onClose }) => (
           <Nota>
             Sin esto configurado no sale <strong>ningún</strong> email. Las reservas se siguen guardando bien y las ves en el panel, pero el cliente no recibe nada. Si un email falla, el sistema te lo avisa en pantalla en vez de tragárselo en silencio.
           </Nota>
+        </Section>
+
+        <Section icon={<Store size={16} />} title="El perfil de tu negocio">
+          <p className="mb-3">Es lo que el cliente lee arriba de todo antes de elegir el turno. Lo cargás desde <strong className="text-ink">"Perfil del Negocio"</strong> en el panel lateral, y son cuatro campos:</p>
+          <div className="space-y-2">
+            <Card title="Nombre del negocio">
+              Aparece en el título de la página, en la pestaña del navegador y como remitente en los emails. Si lo dejás vacío, la página dice "Turnos" a secas.
+            </Card>
+            <Card title="Descripción">
+              Una o dos líneas sobre qué hacés, debajo del nombre. Por ejemplo: "Cortes clásicos y arreglo de barba. Atendemos con turno previo."
+            </Card>
+            <Card title="Horarios de atención">
+              Un renglón por día o por tramo. Es <strong className="text-ink">informativo</strong>: le dice al cliente cuándo estás abierto, pero no crea ni borra turnos. Los turnos los seguís cargando con "Nuevo Horario".
+            </Card>
+            <Card title="Notas">
+              Cualquier cosa que quieras aclarar antes de que reserve: dónde estacionar, qué pasa si llega tarde, si hay que traer algo.
+            </Card>
+          </div>
+          <p className="text-xs mt-3">Los campos que dejes vacíos no se muestran, así que la tarjeta nunca queda con espacios en blanco raros. Los saltos de línea se respetan tal cual los escribís.</p>
         </Section>
 
         <Section icon={<Image size={16} />} title="Tu foto de perfil">

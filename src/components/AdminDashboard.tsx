@@ -2,7 +2,7 @@ import React from 'react';
 import { appointmentService, emailService } from '../services/api';
 import { Appointment, AppointmentStatus } from '../types';
 import { formatTime, formatDate, cn } from '../lib/utils';
-import { Plus, Calendar as CalendarIcon, CheckCircle, Trash2, Mail, Lock, Image, BookOpen, MessageSquare, Ban } from 'lucide-react';
+import { Plus, Calendar as CalendarIcon, CheckCircle, Trash2, Mail, Lock, Image, BookOpen, MessageSquare, Ban, Store } from 'lucide-react';
 import { format } from 'date-fns';
 import { GmailSetup } from './GmailSetup';
 import { ChangePassword } from './ChangePassword';
@@ -10,6 +10,7 @@ import { CreateSlotsModal } from './CreateSlotsModal';
 import { PhotoUpload } from './PhotoUpload';
 import { ConfirmModal } from './ConfirmModal';
 import { BlockRangeModal } from './BlockRangeModal';
+import { BusinessProfile } from './BusinessProfile';
 import { STATUS_META } from '../lib/statusMeta';
 import { WeekView } from './WeekView';
 import { MonthView } from './MonthView';
@@ -29,6 +30,7 @@ export const AdminDashboard: React.FC = () => {
   const [view, setView] = React.useState<'day' | 'week' | 'month'>('day');
   const [showManual, setShowManual] = React.useState(false);
   const [showBlockRange, setShowBlockRange] = React.useState(false);
+  const [showBusinessProfile, setShowBusinessProfile] = React.useState(false);
 
   const loadAppointments = React.useCallback(async () => {
     setLoading(true);
@@ -308,6 +310,19 @@ export const AdminDashboard: React.FC = () => {
         </button>
 
         <button
+          onClick={() => setShowBusinessProfile(true)}
+          className="w-full flex items-center gap-3 bg-surface p-4 rounded-awd border border-line hover:border-primary/40 hover:bg-primary/5 transition-colors group"
+        >
+          <div className="w-9 h-9 rounded-awd bg-primary/10 text-primary flex items-center justify-center shrink-0 group-hover:bg-primary/20 transition-colors">
+            <Store size={18} />
+          </div>
+          <div className="text-left">
+            <p className="text-sm font-semibold text-ink">Perfil del Negocio</p>
+            <p className="text-xs text-muted">Nombre, descripción, horarios y notas</p>
+          </div>
+        </button>
+
+        <button
           onClick={() => setShowPhotoUpload(true)}
           className="w-full flex items-center gap-3 bg-surface p-4 rounded-awd border border-line hover:border-primary/40 hover:bg-primary/5 transition-colors group"
         >
@@ -416,6 +431,22 @@ export const AdminDashboard: React.FC = () => {
           onConfirm={executeDelete}
           onCancel={() => setConfirmDelete(null)}
         />
+      )}
+
+      {/* Business Profile Modal */}
+      {showBusinessProfile && (
+        <div className="fixed inset-0 bg-ink/40 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+          <div className="bg-surface rounded-awd p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto shadow-2xl">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-lg font-bold">Perfil del Negocio</h3>
+              <button onClick={() => setShowBusinessProfile(false)} className="text-muted hover:text-ink text-xl leading-none">×</button>
+            </div>
+            <BusinessProfile onComplete={() => {
+              setShowBusinessProfile(false);
+              setOkMsg('Perfil actualizado.');
+            }} />
+          </div>
+        </div>
       )}
 
       {/* Photo Upload Modal */}

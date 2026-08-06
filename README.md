@@ -52,7 +52,7 @@ El estado del servidor se maneja con llamadas directas al SDK de Supabase y `use
 │   ├── lib/
 │   │   ├── supabase.ts           # Cliente singleton + flag supabaseReady
 │   │   ├── useTheme.ts           # Modo claro/oscuro (default dark, localStorage)
-│   │   ├── useBusinessName.ts    # Lee settings.business_name con cache
+│   │   ├── usePublicProfile.ts   # Perfil público del negocio, cacheado
 │   │   ├── statusMeta.ts         # Label + icono + chip por estado
 │   │   └── utils.ts              # formatTime(), formatDate(), cn()
 │   ├── services/
@@ -72,6 +72,7 @@ El estado del servidor se maneja con llamadas directas al SDK de Supabase y `use
 │       ├── CreateSlotsModal.tsx  # Alta de horarios (3 modos)
 │       ├── GmailSetup.tsx        # Wizard de conexión con Gmail
 │       ├── ChangePassword.tsx    # Cambio de contraseña
+│       ├── BusinessProfile.tsx   # Nombre, descripción, horarios y notas
 │       ├── PhotoUpload.tsx       # Foto de perfil
 │       ├── ConfirmModal.tsx      # Confirmación de acciones destructivas
 │       └── Manual.tsx            # Manual de uso dentro de la app
@@ -87,7 +88,8 @@ El estado del servidor se maneja con llamadas directas al SDK de Supabase y `use
 │       ├── 004_anon_read_business_name.sql
 │       ├── 005_blocked_status.sql
 │       ├── 006_clientes_y_reservas.sql
-│       └── 007_trigger_registro_reservas.sql
+│       ├── 007_trigger_registro_reservas.sql
+│       └── 008_perfil_publico_negocio.sql
 ├── .env                          # Local, ignorado por git
 ├── vercel.json                   # Rewrites SPA
 └── vite.config.ts
@@ -107,12 +109,16 @@ El estado del servidor se maneja con llamadas directas al SDK de Supabase y `use
 
 **`AdminDashboard.tsx`** — Vistas día, semana y mes. Marcar completado, eliminar, y accesos a los modales de configuración.
 
-**`BlockRangeModal.tsx`** — Bloqueo por período arbitrario (desde/hasta), disponible desde cualquier vista. Trae atajos para día, semana, mes actual y mes siguiente, pero el rango se edita a mano: unas vacaciones rara vez empiezan un lunes y terminan un domingo. El resumen previo se calcula sobre los `appointments` ya cargados en el panel, sin pegarle de nuevo a la base. Usa `blockRange`/`unblockRange` (`gte`/`lte`) en vez de mandar una lista de fechas.
+**`BlockRangeModal.tsx`** — Bloqueo por período arbitrario (desde/hasta), disponible desde cualquier vista. Trae atajos de día, semana y mes, pero el rango se edita a mano: unas vacaciones rara vez empiezan un lunes y terminan un domingo. El resumen previo se calcula sobre los `appointments` ya cargados en el panel, sin pegarle de nuevo a la base. Usa `blockRange`/`unblockRange` (`gte`/`lte`) en vez de mandar una lista de fechas.
 
 **`CreateSlotsModal.tsx`** — Tres modos:
 - **Individual:** una fecha y una hora
 - **Rango:** una fecha, horario desde/hasta y duración (30/45/60/90 min), con preview
 - **Período:** días de la semana + rango de fechas + horario + duración, en bloque
+
+**`BusinessProfile.tsx`** — Los cuatro campos que el visitante ve arriba de la página: nombre, descripción, horarios y notas. Escribe en `settings` y después invalida el cache de `usePublicProfile`, si no la página pública sigue mostrando lo viejo hasta recargar. `business_hours` es texto libre y **no** tiene relación con los slots: es informativo.
+
+**`ProfileCard.tsx`** — Renderiza ese perfil. Los campos vacíos no se muestran, y sin descripción cae al texto genérico de antes. Respeta saltos de línea con `whitespace-pre-line`.
 
 **`GmailSetup.tsx`** — Wizard de 5 pasos para obtener una Contraseña de Aplicación de Google y guardarla en `settings`.
 
@@ -149,6 +155,11 @@ Configuración key/value que se edita desde el panel.
 | `gmail_app_password` | Contraseña de aplicación de 16 caracteres |
 | `profile_photo` | URL pública de la foto |
 | `business_name` | Nombre del negocio. Alimenta header, pestaña, mails y `.ics`. Si falta, se usa "Turnos" |
+| `business_description` | Una o dos líneas debajo del nombre en la tarjeta pública |
+| `business_hours` | Horarios de atención, texto libre multilínea. **Informativo**: no genera ni bloquea slots |
+| `business_notes` | Aclaraciones para el cliente antes de reservar |
+
+Las últimas cuatro se editan desde el panel → "Perfil del Negocio". Los campos vacíos no se renderizan.
 
 ### `clientes` y `reservas`
 
@@ -197,14 +208,16 @@ El calendario público necesita ver los turnos ocupados para marcar los días ll
 | appointments | `anon_book_slot` | anon | UPDATE `available` → `booked` |
 | appointments | `anon_cancel_slot` | anon | UPDATE `booked` → `available` |
 | appointments | `authenticated_full_access_appointments` | authenticated | ALL |
-| settings | `anon_read_public_settings` | anon | SELECT solo `key in ('profile_photo','business_name')` |
+| settings | `anon_read_public_settings` | anon | SELECT solo las 5 claves públicas (ver `008`) |
 | settings | `authenticated_full_access_settings` | authenticated | ALL |
 | storage.objects | `anon_read_profile_objects` | anon | SELECT bucket `profile` |
 | storage.objects | `authenticated_manage_profile_photo` | authenticated | ALL bucket `profile` |
 | clientes | `authenticated_full_access_clientes` | authenticated | ALL (anon revocado) |
 | reservas | `authenticated_full_access_reservas` | authenticated | ALL (anon revocado) |
 
-Todo esto está en `001`, `002` y `004`. El estado `blocked` lo agrega `005`; `clientes` y `reservas` con sus policies, `006`. No editar a mano desde el dashboard: si cambia, actualizar la migración.
+Todo esto está en `001`, `002` y `004`. El estado `blocked` lo agrega `005`; `clientes` y `reservas` con sus policies, `006`; las claves públicas del perfil, `008`. No editar a mano desde el dashboard: si cambia, actualizar la migración.
+
+> **Al agregar una clave pública nueva** hay que tocar dos lugares: la lista de la policy en una migración nueva, y `PUBLIC_SETTING_KEYS` en `src/lib/usePublicProfile.ts`. Si falta la migración, la clave existe pero el visitante la lee como vacía. Nunca cambiar la policy a `using (true)`: `settings` guarda la contraseña de Gmail.
 
 ---
 
@@ -312,6 +325,7 @@ Las fechas se interpretan en `America/Argentina/Buenos_Aires` (UTC-3, hardcodead
 │   shift+clic para rango, doble clic para abrir ese día (vista mes)
 ├── Marcar completado / eliminar (si estaba reservado, notifica al cliente)
 ├── "Nuevo Horario"      → individual / rango / período
+├── "Perfil del Negocio" → nombre, descripción, horarios y notas (los ve el cliente)
 ├── "Foto de Perfil"     → sube a Storage
 ├── "Configurar Email"   → wizard de Gmail
 ├── "Cambiar Contraseña"
@@ -325,8 +339,8 @@ Las fechas se interpretan en `America/Argentina/Buenos_Aires` (UTC-3, hardcodead
 ### 1. Supabase
 
 1. Crear proyecto nuevo (región `sa-east-1` para Argentina).
-2. SQL Editor → correr las migraciones en orden: `001`, `002`, `004`, `005`, `006`, `007`. (`003` va al final, ver punto 8.)
-3. SQL Editor → cargar `business_name` en `settings` con el nombre del negocio.
+2. SQL Editor → correr las migraciones en orden: `001`, `002`, `004`, `005`, `006`, `007`, `008`. (`003` va al final, ver punto 8.)
+3. El nombre del negocio y el resto del perfil se cargan después desde el panel, no hace falta SQL.
 4. Authentication → Users → Add user: crear la cuenta del titular con su contraseña.
 5. **Authentication → Providers → Email → desactivar "Enable email signup".** Sin esto cualquiera puede registrarse y entrar al panel, porque el panel solo verifica que haya sesión iniciada.
 6. Edge Functions → deployar `send-confirmation`, `send-cancellation` y `send-reminders` con `verify_jwt` activado.
@@ -371,8 +385,8 @@ Lo que sí vive en el código:
 
 ```
 [ ] Proyecto Supabase creado
-[ ] Migraciones 001, 002, 004, 005, 006 y 007 ejecutadas
-[ ] business_name cargado en settings
+[ ] Migraciones 001, 002, 004, 005, 006, 007 y 008 ejecutadas
+[ ] Perfil del negocio cargado desde el panel (nombre, descripción, horarios, notas)
 [ ] Usuario admin creado
 [ ] Signup público desactivado
 [ ] 3 Edge Functions deployadas

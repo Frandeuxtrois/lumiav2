@@ -3,7 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Sun, Moon } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { User } from '@supabase/supabase-js';
-import { useBusinessName } from '../lib/useBusinessName';
+import { useBusinessName } from '../lib/usePublicProfile';
 import { useTheme } from '../lib/useTheme';
 import { cn } from '../lib/utils';
 
